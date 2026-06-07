@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
+import { ToastContainer, toast } from "react-toastify";
+import { api } from "../services/api";
 import { Mail, Lock, ArrowRight, FileText } from "lucide-react";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
@@ -10,14 +12,28 @@ export default function Login() {
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Simulate login logic here
-    navigate("/oficios");
+    try {
+      const response = await api.post("/api/auth/login", { email, password });
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      navigate("/oficios");
+    } catch (error) {
+      console.error("Login failed:", error);
+      toast.error("Falha no login. Verifique suas credenciais.");
+    }
   };
 
   return (
     <div className="min-h-screen flex bg-white">
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        closeOnClick={true}
+        theme="light"
+      />
       <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:flex-none lg:w-1/2 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div className="flex items-center gap-3 mb-10">

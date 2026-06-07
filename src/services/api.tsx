@@ -1,6 +1,6 @@
 import axios from "axios";
 const api = axios.create({
-  baseURL: "https://arcologia.mirtilo.dev.br",
+  baseURL: "http://192.168.0.72:80",
   headers: {
     "Content-Type": "application/json",
   },
