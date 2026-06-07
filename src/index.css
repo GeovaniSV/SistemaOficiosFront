@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
 @theme {
@@ -9,4 +9,37 @@ body {
   font-family: "Inter", sans-serif;
   background-color: #f8fafc; /* slate-50 */
   color: #0f172a; /* slate-900 */
+}
+
+:root {
+  /* Cores base */
+  --toastify-color-success: #10b981; /* emerald-500 */
+  --toastify-color-error: #ef4444; /* red-500 */
+  --toastify-color-warning: #f59e0b; /* amber-500 */
+  --toastify-color-info: #3b82f6; /* blue-500 */
+
+  /* Fundo e texto */
+  --toastify-toast-background: #1e293b; /* slate-800 */
+  --toastify-text-color-light: #f1f5f9; /* slate-100 */
+
+  /* Borda arredondada */
+  --toastify-toast-bd-radius: 12px;
+
+  /* Sombra */
+  --toastify-toast-shadow: 0px 8px 24px rgba(0, 0, 0, 0.25);
+
+  /* Progress bar */
+  --toastify-color-progress-success: #10b981;
+  --toastify-color-progress-error: #ef4444;
+  --toastify-color-progress-warning: #f59e0b;
+  --toastify-color-progress-info: #3b82f6;
+
+  /* Ícones */
+  --toastify-icon-color-success: #10b981;
+  --toastify-icon-color-error: #ef4444;
+  --toastify-icon-color-warning: #f59e0b;
+  --toastify-icon-color-info: #3b82f6;
+
+  /* Fonte */
+  --toastify-font-family: inherit; /* herda a fonte do seu projeto */
 }
