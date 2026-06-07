@@ -1,43 +1,58 @@
-import React, { useState } from 'react';
-import { Search, Filter, Plus, CheckCircle2, XCircle, ArrowLeft, Save, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
-import Header from './Header';
-import Sidebar from './Sidebar';
-import { Button } from './ui/Button';
-import { Input } from './ui/Input';
-import { Badge } from './ui/Badge';
-import { Select } from './ui/Select';
-import { useAppStore } from '../store/useAppStore';
+import React, { useState } from "react";
+import { useNavigate } from "react-router";
+import {
+  Search,
+  Filter,
+  Plus,
+  CheckCircle2,
+  XCircle,
+  ArrowLeft,
+  Save,
+  Edit,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import Header from "./Header";
+import Sidebar from "./Sidebar";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
+import { Badge } from "./ui/Badge";
+import { Select } from "./ui/Select";
+import { useAppStore } from "../store/useAppStore";
 
-export default function Usuarios({ 
-  onLogout, 
-  onNavigate 
-}: { 
-  onLogout: () => void;
-  onNavigate: (view: string) => void;
-}) {
+export default function Usuarios() {
+  const navigate = useNavigate();
   const { usuarios, addUsuario, updateUsuario } = useAppStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('Todos');
-  
-  const [view, setView] = useState<'list' | 'form'>('list');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("Todos");
+
+  const [view, setView] = useState<"list" | "form">("list");
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
-  const [menuPosition, setMenuPosition] = useState<{ x: number, y: number } | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [formData, setFormData] = useState<any>(null);
   const [isExistingUser, setIsExistingUser] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const filteredUsers = usuarios.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'Todos' || user.status === statusFilter;
+  const filteredUsers = usuarios.filter((user) => {
+    const matchesSearch =
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "Todos" || user.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-  const paginatedUsers = filteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
 
   // Reset page when searching or filtering
   React.useEffect(() => {
@@ -45,61 +60,75 @@ export default function Usuarios({
   }, [searchTerm, statusFilter]);
 
   const handleNewUser = () => {
-    setFormData({ name: '', email: '', cpf: '', role: 'Usuário', cargo: '', status: 'Ativo' });
+    setFormData({
+      name: "",
+      email: "",
+      cpf: "",
+      role: "Usuário",
+      cargo: "",
+      status: "Ativo",
+    });
     setIsExistingUser(false);
-    setView('form');
+    setView("form");
     setActiveMenuId(null);
   };
 
   const handleEditUser = () => {
-    const user = usuarios.find(u => u.id === activeMenuId);
+    const user = usuarios.find((u) => u.id === activeMenuId);
     if (user) {
       setFormData({ ...user });
       setIsExistingUser(true);
-      setView('form');
+      setView("form");
       setActiveMenuId(null);
     }
   };
 
   const handleSaveUser = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (isExistingUser) {
       updateUsuario(formData.id, formData);
     } else {
-      const newUser = { ...formData, lastLogin: 'Nunca' };
+      const newUser = { ...formData, lastLogin: "Nunca" };
       addUsuario(newUser);
-      
+
       // we need the saved user's id to keep editing it, we simulate what we'd get back
-      const createdUser = { ...newUser, id: Date.now() }; 
+      const createdUser = { ...newUser, id: Date.now() };
       setFormData(createdUser);
       setIsExistingUser(true); // Lock CPF after saving
     }
-    
-    setToastMessage('Usuário salvo com sucesso!');
-    setTimeout(() => setToastMessage(''), 3000);
+
+    setToastMessage("Usuário salvo com sucesso!");
+    setTimeout(() => setToastMessage(""), 3000);
   };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex">
-      <Sidebar 
-        currentView="usuarios" 
-        onNavigate={onNavigate} 
-        onLogout={onLogout} 
+      <Sidebar
+        currentView="usuarios"
+        onNavigate={(view) => navigate(`/${view}`)}
+        onLogout={() => navigate("/login")}
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
       />
-      
+
       <div className="flex-1 md:pl-64 flex flex-col min-h-screen w-full">
-        <Header onMenuClick={() => setIsMobileMenuOpen(true)} onNavigate={onNavigate} />
-        
+        <Header
+          onMenuClick={() => setIsMobileMenuOpen(true)}
+          onNavigate={(view) => navigate(`/${view}`)}
+        />
+
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
-          {view === 'list' && (
+          {view === "list" && (
             <>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
                 <div>
-                  <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Usuários</h1>
-                  <p className="text-sm text-slate-500 mt-1">Gerencie os usuários ativos e inativos do sistema.</p>
+                  <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                    Usuários
+                  </h1>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Gerencie os usuários ativos e inativos do sistema.
+                  </p>
                 </div>
                 <div className="mt-4 sm:mt-0">
                   <Button onClick={handleNewUser}>
@@ -147,26 +176,42 @@ export default function Usuarios({
                     </thead>
                     <tbody className="divide-y divide-slate-200">
                       {paginatedUsers.map((user) => (
-                        <tr 
-                          key={user.id} 
+                        <tr
+                          key={user.id}
                           onClick={(e) => {
                             e.stopPropagation();
-                            setActiveMenuId(activeMenuId === user.id ? null : user.id);
+                            setActiveMenuId(
+                              activeMenuId === user.id ? null : user.id,
+                            );
                             setMenuPosition({ x: e.clientX, y: e.clientY });
                           }}
-                          className={`hover:bg-slate-50 transition-colors cursor-pointer group ${activeMenuId === user.id ? 'bg-slate-50' : ''}`}
+                          className={`hover:bg-slate-50 transition-colors cursor-pointer group ${activeMenuId === user.id ? "bg-slate-50" : ""}`}
                         >
                           <td className="px-6 py-4">
                             <div className="flex flex-col">
-                              <span className="font-medium text-slate-900">{user.name}</span>
-                              <span className="text-slate-500 text-xs mt-0.5">{user.email}</span>
+                              <span className="font-medium text-slate-900">
+                                {user.name}
+                              </span>
+                              <span className="text-slate-500 text-xs mt-0.5">
+                                {user.email}
+                              </span>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-slate-600">{user.cargo}</td>
-                          <td className="px-6 py-4 text-slate-600">{user.role}</td>
+                          <td className="px-6 py-4 text-slate-600">
+                            {user.cargo}
+                          </td>
+                          <td className="px-6 py-4 text-slate-600">
+                            {user.role}
+                          </td>
                           <td className="px-6 py-4">
-                            <Badge variant={user.status === 'Ativo' ? 'success' : 'secondary'}>
-                              {user.status === 'Ativo' ? (
+                            <Badge
+                              variant={
+                                user.status === "Ativo"
+                                  ? "success"
+                                  : "secondary"
+                              }
+                            >
+                              {user.status === "Ativo" ? (
                                 <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                               ) : (
                                 <XCircle className="w-3.5 h-3.5 mr-1" />
@@ -174,12 +219,17 @@ export default function Usuarios({
                               {user.status}
                             </Badge>
                           </td>
-                          <td className="px-6 py-4 text-slate-500">{user.lastLogin}</td>
+                          <td className="px-6 py-4 text-slate-500">
+                            {user.lastLogin}
+                          </td>
                         </tr>
                       ))}
                       {filteredUsers.length === 0 && (
                         <tr>
-                          <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                          <td
+                            colSpan={5}
+                            className="px-6 py-8 text-center text-slate-500"
+                          >
                             Nenhum usuário encontrado com os filtros atuais.
                           </td>
                         </tr>
@@ -192,13 +242,20 @@ export default function Usuarios({
                 {filteredUsers.length > itemsPerPage && (
                   <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between bg-slate-50">
                     <span className="text-sm text-slate-500">
-                      Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredUsers.length)} de {filteredUsers.length} registros
+                      Mostrando {(currentPage - 1) * itemsPerPage + 1} a{" "}
+                      {Math.min(
+                        currentPage * itemsPerPage,
+                        filteredUsers.length,
+                      )}{" "}
+                      de {filteredUsers.length} registros
                     </span>
                     <div className="flex items-center gap-2">
                       <Button
                         variant="secondary"
                         size="icon"
-                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        onClick={() =>
+                          setCurrentPage(Math.max(1, currentPage - 1))
+                        }
                         disabled={currentPage === 1}
                       >
                         <ChevronLeft className="w-5 h-5 text-slate-500" />
@@ -209,7 +266,9 @@ export default function Usuarios({
                       <Button
                         variant="secondary"
                         size="icon"
-                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        onClick={() =>
+                          setCurrentPage(Math.min(totalPages, currentPage + 1))
+                        }
                         disabled={currentPage === totalPages}
                       >
                         <ChevronRight className="w-5 h-5 text-slate-500" />
@@ -221,15 +280,15 @@ export default function Usuarios({
             </>
           )}
 
-          {view === 'form' && formData && (
+          {view === "form" && formData && (
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4">
               <div className="p-6 border-b border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={() => {
-                      setView('list');
+                      setView("list");
                       setActiveMenuId(null);
                     }}
                     className="rounded-full"
@@ -237,68 +296,97 @@ export default function Usuarios({
                     <ArrowLeft className="w-5 h-5" />
                   </Button>
                   <h2 className="text-lg font-bold text-slate-900">
-                    {isExistingUser ? 'Editar Usuário' : 'Novo Usuário'}
+                    {isExistingUser ? "Editar Usuário" : "Novo Usuário"}
                   </h2>
                 </div>
               </div>
               <form onSubmit={handleSaveUser} className="p-6 space-y-6">
                 <div className="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
                   <div>
-                    <h4 className="text-sm font-medium text-slate-900">Status do Usuário</h4>
-                    <p className="text-xs text-slate-500 mt-0.5">Define se o usuário tem acesso ao sistema</p>
+                    <h4 className="text-sm font-medium text-slate-900">
+                      Status do Usuário
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Define se o usuário tem acesso ao sistema
+                    </p>
                   </div>
-                  <label className={`relative inline-flex items-center ${!isExistingUser ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}>
-                    <input 
-                      type="checkbox" 
+                  <label
+                    className={`relative inline-flex items-center ${!isExistingUser ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
+                  >
+                    <input
+                      type="checkbox"
                       className="sr-only peer"
-                      checked={formData.status === 'Ativo'}
+                      checked={formData.status === "Ativo"}
                       disabled={!isExistingUser}
-                      onChange={(e) => setFormData({...formData, status: e.target.checked ? 'Ativo' : 'Inativo'})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          status: e.target.checked ? "Ativo" : "Inativo",
+                        })
+                      }
                     />
                     <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 peer-disabled:bg-emerald-400"></div>
                     <span className="ml-3 text-sm font-medium text-slate-700">
-                      {formData.status === 'Ativo' ? 'Ativo' : 'Inativo'}
+                      {formData.status === "Ativo" ? "Ativo" : "Inativo"}
                     </span>
                   </label>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Nome Completo <span className="text-rose-500">*</span></label>
-                    <Input 
-                      type="text" 
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Nome Completo <span className="text-rose-500">*</span>
+                    </label>
+                    <Input
+                      type="text"
                       required
                       value={formData.name}
-                      onChange={e => setFormData({...formData, name: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">E-mail <span className="text-rose-500">*</span></label>
-                    <Input 
-                      type="email" 
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      E-mail <span className="text-rose-500">*</span>
+                    </label>
+                    <Input
+                      type="email"
                       required
                       value={formData.email}
-                      onChange={e => setFormData({...formData, email: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">CPF <span className="text-rose-500">*</span></label>
-                    <Input 
-                      type="text" 
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      CPF <span className="text-rose-500">*</span>
+                    </label>
+                    <Input
+                      type="text"
                       required
                       disabled={isExistingUser}
                       value={formData.cpf}
-                      onChange={e => setFormData({...formData, cpf: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({ ...formData, cpf: e.target.value })
+                      }
                       placeholder="000.000.000-00"
                     />
                     {isExistingUser && (
-                      <p className="text-xs text-slate-500 mt-1">O CPF não pode ser alterado após o cadastro.</p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        O CPF não pode ser alterado após o cadastro.
+                      </p>
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Papel <span className="text-rose-500">*</span></label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Papel <span className="text-rose-500">*</span>
+                    </label>
                     <Select
                       value={formData.role}
-                      onChange={e => setFormData({...formData, role: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({ ...formData, role: e.target.value })
+                      }
                     >
                       <option value="Administrador">Administrador</option>
                       <option value="Gestor">Gestor</option>
@@ -306,18 +394,26 @@ export default function Usuarios({
                     </Select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Cargo <span className="text-rose-500">*</span></label>
-                    <Select 
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Cargo <span className="text-rose-500">*</span>
+                    </label>
+                    <Select
                       required
                       value={formData.cargo}
-                      onChange={e => setFormData({...formData, cargo: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({ ...formData, cargo: e.target.value })
+                      }
                     >
-                      <option value="" disabled>Selecione um cargo</option>
+                      <option value="" disabled>
+                        Selecione um cargo
+                      </option>
                       <option value="Presidente">Presidente</option>
                       <option value="Vice-Presidente">Vice-Presidente</option>
                       <option value="Secretário(a)">Secretário(a)</option>
                       <option value="Coordenador(a)">Coordenador(a)</option>
-                      <option value="Presidente de Comissão">Presidente de Comissão</option>
+                      <option value="Presidente de Comissão">
+                        Presidente de Comissão
+                      </option>
                     </Select>
                   </div>
                 </div>
@@ -336,14 +432,17 @@ export default function Usuarios({
       {/* Context Menu */}
       {activeMenuId && menuPosition && (
         <>
-          <div className="fixed inset-0 z-40 bg-slate-900/20 sm:bg-transparent transition-opacity" onClick={() => setActiveMenuId(null)} />
-          
+          <div
+            className="fixed inset-0 z-40 bg-slate-900/20 sm:bg-transparent transition-opacity"
+            onClick={() => setActiveMenuId(null)}
+          />
+
           {/* Desktop Context Menu */}
-          <div 
+          <div
             className="hidden sm:block fixed z-50 bg-white rounded-xl shadow-xl border border-slate-200 py-2 min-w-[180px] overflow-hidden animate-in fade-in zoom-in-95 duration-100"
-            style={{ 
-              top: Math.min(menuPosition.y, window.innerHeight - 150), 
-              left: Math.min(menuPosition.x, window.innerWidth - 200) 
+            style={{
+              top: Math.min(menuPosition.y, window.innerHeight - 150),
+              left: Math.min(menuPosition.x, window.innerWidth - 200),
             }}
           >
             <div className="flex flex-col">
@@ -362,16 +461,22 @@ export default function Usuarios({
             <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-4" />
             <div className="px-4 pb-6">
               {(() => {
-                const activeUser = usuarios.find(u => u.id === Number(activeMenuId));
+                const activeUser = usuarios.find(
+                  (u) => u.id === Number(activeMenuId),
+                );
                 if (!activeUser) return null;
 
                 return (
                   <div className="flex flex-col space-y-2">
                     <div className="mb-2 px-2">
-                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Opções do Usuário</p>
-                      <p className="text-sm font-semibold text-slate-900 truncate">{activeUser.name}</p>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        Opções do Usuário
+                      </p>
+                      <p className="text-sm font-semibold text-slate-900 truncate">
+                        {activeUser.name}
+                      </p>
                     </div>
-                    
+
                     <button
                       onClick={handleEditUser}
                       className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors w-full text-left"

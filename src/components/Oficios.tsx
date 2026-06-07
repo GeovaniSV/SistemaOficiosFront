@@ -1,28 +1,31 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Plus, CheckCircle2, ChevronDown, FileText, Upload } from 'lucide-react';
-import Header from './Header';
-import Sidebar from './Sidebar';
-import { Button } from './ui/Button';
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router";
+import {
+  Plus,
+  CheckCircle2,
+  ChevronDown,
+  FileText,
+  Upload,
+} from "lucide-react";
+import Header from "./Header";
+import Sidebar from "./Sidebar";
+import { Button } from "./ui/Button";
 
-import { useOficios } from '../hooks/useOficios';
-import { useUrlSync } from '../hooks/useUrlSync';
-import { OficioPreviewModal } from './OficioPreviewModal';
-import { OficioEvaluationModal } from './OficioEvaluationModal';
-import { OficioInfoModal } from './OficioInfoModal';
-import { OficiosFilters } from './OficiosFilters';
-import { OficiosList } from './OficiosList';
-import { OficiosContextMenu } from './OficiosContextMenu';
+import { useOficios } from "../hooks/useOficios";
+import { useUrlSync } from "../hooks/useUrlSync";
+import { OficioPreviewModal } from "./OficioPreviewModal";
+import { OficioEvaluationModal } from "./OficioEvaluationModal";
+import { OficioInfoModal } from "./OficioInfoModal";
+import { OficiosFilters } from "./OficiosFilters";
+import { OficiosList } from "./OficiosList";
+import { OficiosContextMenu } from "./OficiosContextMenu";
 
-export default function Oficios({ 
-  onLogout, 
-  onNavigate 
-}: { 
-  onLogout: () => void;
-  onNavigate: (view: string) => void;
-}) {
-  const [destinatarioSearch, setDestinatarioSearch] = useState('');
+export default function Oficios() {
+  const [destinatarioSearch, setDestinatarioSearch] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedDestinatario, setSelectedDestinatario] = useState<any>(null);
+
+  const navigate = useNavigate();
 
   const {
     oficios,
@@ -34,30 +37,36 @@ export default function Oficios({
     setCurrentPage,
     totalPages,
     paginatedOficios,
-    getOficioById
+    getOficioById,
   } = useOficios(10);
 
-  const [urlOficioId, setUrlOficioId] = useUrlSync('/oficios/');
+  const [urlOficioId, setUrlOficioId] = useUrlSync("/oficios/");
 
   const [previewOficio, setPreviewOficio] = useState<any>(null);
   const [evaluatingOficio, setEvaluatingOficio] = useState<any>(null);
-  const [toastMessage, setToastMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState("");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-  const [menuPosition, setMenuPosition] = useState<{ x: number, y: number } | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [infoOficio, setInfoOficio] = useState<any>(null);
-  
+
   const [isNewMenuOpen, setIsNewMenuOpen] = useState(false);
   const newMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (newMenuRef.current && !newMenuRef.current.contains(event.target as Node)) {
+      if (
+        newMenuRef.current &&
+        !newMenuRef.current.contains(event.target as Node)
+      ) {
         setIsNewMenuOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   React.useEffect(() => {
@@ -76,41 +85,55 @@ export default function Oficios({
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex">
-      <Sidebar 
-        currentView="oficios" 
-        onNavigate={onNavigate} 
-        onLogout={onLogout}
+      <Sidebar
+        currentView="oficios"
+        onNavigate={(view) =>
+          navigate(`/${view === "novoOficio" ? "oficios/novo" : view}`)
+        }
+        onLogout={() => {
+          // Clear any authentication tokens or user data here
+          navigate("/login");
+        }}
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
       />
-      
+
       <div className="flex-1 md:pl-64 flex flex-col min-h-screen w-full">
-        <Header onMenuClick={() => setIsMobileMenuOpen(true)} onNavigate={onNavigate} />
-        
+        <Header
+          onMenuClick={() => setIsMobileMenuOpen(true)}
+          onNavigate={(view) =>
+            navigate(`/${view === "novoOficio" ? "oficios/novo" : view}`)
+          }
+        />
+
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Ofícios</h1>
-              <p className="text-sm text-slate-500 mt-1">Gerencie, filtre e crie novos ofícios.</p>
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                Ofícios
+              </h1>
+              <p className="text-sm text-slate-500 mt-1">
+                Gerencie, filtre e crie novos ofícios.
+              </p>
             </div>
             <div className="mt-4 sm:mt-0 flex items-center space-x-3">
               <div className="relative" ref={newMenuRef}>
-                <Button 
-                  onClick={() => setIsNewMenuOpen(!isNewMenuOpen)}
-                >
+                <Button onClick={() => setIsNewMenuOpen(!isNewMenuOpen)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Novo Ofício
-                  <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${isNewMenuOpen ? 'rotate-180' : ''}`} />
+                  Novo Ofício caba
+                  <ChevronDown
+                    className={`w-4 h-4 ml-2 transition-transform ${isNewMenuOpen ? "rotate-180" : ""}`}
+                  />
                 </Button>
-                
+
                 {isNewMenuOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden z-20 animate-in fade-in slide-in-from-top-2">
                     <button
                       onClick={() => {
-                        localStorage.removeItem('editOficioId');
-                        localStorage.removeItem('editOficioRejectionInfo');
-                        onNavigate('novoOficio');
+                        localStorage.removeItem("editOficioId");
+                        localStorage.removeItem("editOficioRejectionInfo");
+                        navigate("/oficios/novo");
                         setIsNewMenuOpen(false);
                       }}
                       className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 transition-colors flex items-center border-b border-slate-100"
@@ -119,23 +142,31 @@ export default function Oficios({
                         <FileText className="w-4 h-4 text-emerald-600" />
                       </div>
                       <div>
-                        <div className="font-medium text-slate-900">Criar Ofício Interno</div>
-                        <div className="text-xs text-slate-500 mt-0.5">Gerar no sistema</div>
+                        <div className="font-medium text-slate-900">
+                          Criar Ofício Interno
+                        </div>
+                        <div className="text-xs text-slate-500 mt-0.5">
+                          Gerar no sistema
+                        </div>
                       </div>
                     </button>
                     <button
                       onClick={() => {
-                        onNavigate('arquivarOficio');
+                        navigate("/oficios/arquivar");
                         setIsNewMenuOpen(false);
                       }}
                       className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 transition-colors flex items-center"
                     >
                       <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3 flex-shrink-0">
-                         <Upload className="w-4 h-4 text-blue-600" />
+                        <Upload className="w-4 h-4 text-blue-600" />
                       </div>
                       <div>
-                        <div className="font-medium text-slate-900">Arquivar Ofício Externo</div>
-                        <div className="text-xs text-slate-500 mt-0.5">Recebido de fora (PDF)</div>
+                        <div className="font-medium text-slate-900">
+                          Arquivar Ofício Externo
+                        </div>
+                        <div className="text-xs text-slate-500 mt-0.5">
+                          Recebido de fora (PDF)
+                        </div>
                       </div>
                     </button>
                   </div>
@@ -186,7 +217,9 @@ export default function Oficios({
         setInfoOficio={setInfoOficio}
         setEvaluatingOficio={setEvaluatingOficio}
         setToastMessage={setToastMessage}
-        onNavigate={onNavigate}
+        onNavigate={(view) =>
+          navigate(`/${view === "novoOficio" ? "oficios/novo" : view}`)
+        }
       />
 
       {/* OficioEvaluationModal */}
@@ -195,28 +228,33 @@ export default function Oficios({
         onClose={() => setEvaluatingOficio(null)}
         oficio={evaluatingOficio}
         onApprove={(id, sendViaEmail) => {
-          updateOficioStatus(id, 'Aprovado');
-          setToastMessage(sendViaEmail 
-            ? `Ofício ${id} assinado, aprovado e enviado por e-mail com sucesso.`
-            : `Ofício ${id} assinado e aprovado com sucesso.`
+          updateOficioStatus(id, "Aprovado");
+          setToastMessage(
+            sendViaEmail
+              ? `Ofício ${id} assinado, aprovado e enviado por e-mail com sucesso.`
+              : `Ofício ${id} assinado e aprovado com sucesso.`,
           );
-          setTimeout(() => setToastMessage(''), 3000);
+          setTimeout(() => setToastMessage(""), 3000);
           setEvaluatingOficio(null);
         }}
         onReject={(id, reason, type) => {
-          updateOficioStatus(id, type === 'devolver' ? 'Devolvido' : 'Rejeitado', {
-            reason: reason,
-            date: new Date().toLocaleString('pt-BR'),
-            author: 'Usuário Atual',
-            type: type
-          });
-          setToastMessage(`Ofício ${id} ${type === 'devolver' ? 'devolvido' : 'rejeitado'} com sucesso.`);
-          setTimeout(() => setToastMessage(''), 3000);
+          updateOficioStatus(
+            id,
+            type === "devolver" ? "Devolvido" : "Rejeitado",
+            {
+              reason: reason,
+              date: new Date().toLocaleString("pt-BR"),
+              author: "Usuário Atual",
+              type: type,
+            },
+          );
+          setToastMessage(
+            `Ofício ${id} ${type === "devolver" ? "devolvido" : "rejeitado"} com sucesso.`,
+          );
+          setTimeout(() => setToastMessage(""), 3000);
           setEvaluatingOficio(null);
         }}
       />
-
-
 
       {/* Toast Notification */}
       {toastMessage && (

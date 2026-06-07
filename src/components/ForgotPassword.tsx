@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
-import { Mail, ArrowLeft, FileText, CheckCircle2 } from 'lucide-react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router";
+import { Mail, ArrowLeft, FileText, CheckCircle2 } from "lucide-react";
 
-export default function ForgotPassword({ onBackToLogin }: { onBackToLogin: () => void }) {
-  const [email, setEmail] = useState('');
+export default function ForgotPassword() {
+  const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,20 +23,30 @@ export default function ForgotPassword({ onBackToLogin }: { onBackToLogin: () =>
             <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600">
               <FileText className="w-6 h-6" />
             </div>
-            <span className="text-2xl font-bold text-slate-900 tracking-tight">OfícioPro</span>
+            <span className="text-2xl font-bold text-slate-900 tracking-tight">
+              OfícioPro
+            </span>
           </div>
 
           {!isSubmitted ? (
             <>
-              <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Recuperar senha</h2>
+              <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
+                Recuperar senha
+              </h2>
               <p className="mt-2 text-sm text-slate-500">
-                Digite seu email e enviaremos instruções para redefinir sua senha.
+                Digite seu email e enviaremos instruções para redefinir sua
+                senha.
               </p>
 
               <div className="mt-8">
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700" htmlFor="email">Email</label>
+                    <label
+                      className="text-sm font-medium text-slate-700"
+                      htmlFor="email"
+                    >
+                      Email
+                    </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Mail className="h-5 w-5 text-slate-400" />
@@ -64,16 +77,20 @@ export default function ForgotPassword({ onBackToLogin }: { onBackToLogin: () =>
               <div className="mx-auto sm:mx-0 flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 mb-4">
                 <CheckCircle2 className="h-6 w-6 text-emerald-600" />
               </div>
-              <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Email enviado!</h2>
+              <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                Email enviado!
+              </h2>
               <p className="mt-2 text-sm text-slate-500">
-                Enviamos um link de recuperação para <span className="font-medium text-slate-900">{email}</span>. Verifique sua caixa de entrada e a pasta de spam.
+                Enviamos um link de recuperação para{" "}
+                <span className="font-medium text-slate-900">{email}</span>.
+                Verifique sua caixa de entrada e a pasta de spam.
               </p>
             </div>
           )}
 
           <div className="mt-8">
             <button
-              onClick={onBackToLogin}
+              onClick={() => navigate("/login")}
               className="flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -82,7 +99,7 @@ export default function ForgotPassword({ onBackToLogin }: { onBackToLogin: () =>
           </div>
         </div>
       </div>
-      
+
       <div className="hidden lg:block relative w-0 flex-1">
         <img
           className="absolute inset-0 h-full w-full object-cover"
