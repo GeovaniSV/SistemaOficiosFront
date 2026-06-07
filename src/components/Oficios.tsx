@@ -86,25 +86,12 @@ export default function Oficios() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex">
       <Sidebar
-        currentView="oficios"
-        onNavigate={(view) =>
-          navigate(`/${view === "novoOficio" ? "oficios/novo" : view}`)
-        }
-        onLogout={() => {
-          // Clear any authentication tokens or user data here
-          navigate("/login");
-        }}
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
       />
 
       <div className="flex-1 md:pl-64 flex flex-col min-h-screen w-full">
-        <Header
-          onMenuClick={() => setIsMobileMenuOpen(true)}
-          onNavigate={(view) =>
-            navigate(`/${view === "novoOficio" ? "oficios/novo" : view}`)
-          }
-        />
+        <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
 
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           {/* Header Section */}

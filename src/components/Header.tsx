@@ -1,39 +1,65 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Bell, Search, Menu, CheckCircle2, Info, FileText } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router";
+import { Bell, Search, Menu, CheckCircle2, Info, FileText } from "lucide-react";
 
-export default function Header({ onMenuClick, onNavigate }: { onMenuClick?: () => void, onNavigate?: (view: string) => void }) {
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
+  const navigate = useNavigate();
+  // const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const mockNotifications = [
-    { id: 1, title: 'Ofício Pendente', message: 'O ofício OF-2026/001 aguarda sua aprovação.', time: 'Há 10 min', unread: true, type: 'pending' },
-    { id: 2, title: 'Ofício Pendente', message: 'O ofício OF-2026/006 aguarda sua aprovação.', time: 'Há 1 hora', unread: true, type: 'pending' },
-    { id: 3, title: 'Ofício Pendente', message: 'O ofício OF-2026/009 aguarda sua aprovação.', time: 'Há 3 horas', unread: false, type: 'pending' },
+    {
+      id: 1,
+      title: "Ofício Pendente",
+      message: "O ofício OF-2026/001 aguarda sua aprovação.",
+      time: "Há 10 min",
+      unread: true,
+      type: "pending",
+    },
+    {
+      id: 2,
+      title: "Ofício Pendente",
+      message: "O ofício OF-2026/006 aguarda sua aprovação.",
+      time: "Há 1 hora",
+      unread: true,
+      type: "pending",
+    },
+    {
+      id: 3,
+      title: "Ofício Pendente",
+      message: "O ofício OF-2026/009 aguarda sua aprovação.",
+      time: "Há 3 horas",
+      unread: false,
+      type: "pending",
+    },
   ];
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsNotificationsOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  // useEffect(() => {
+  //   function handleClickOutside(event: MouseEvent) {
+  //     if (
+  //       dropdownRef.current &&
+  //       !dropdownRef.current.contains(event.target as Node)
+  //     ) {
+  //       setIsNotificationsOpen(false);
+  //     }
+  //   }
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => document.removeEventListener("mousedown", handleClickOutside);
+  // }, []);
 
-  const handleNotificationClick = () => {
-    localStorage.setItem('oficiosInitialFilter', 'pendente');
-    if (onNavigate) {
-      onNavigate('oficios');
-    }
-    window.dispatchEvent(new Event('oficiosFilterChanged'));
-    setIsNotificationsOpen(false);
-  };
+  // const handleNotificationClick = () => {
+  //   localStorage.setItem("oficiosInitialFilter", "pendente");
+  //   if (onNavigate) {
+  //     onNavigate("oficios");
+  //   }
+  //   window.dispatchEvent(new Event("oficiosFilterChanged"));
+  //   setIsNotificationsOpen(false);
+  // };
 
   return (
     <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 sticky top-0 z-10">
       <div className="flex items-center flex-1">
-        <button 
+        <button
           onClick={onMenuClick}
           className="md:hidden p-2 -ml-2 mr-2 text-slate-500 hover:text-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
         >
@@ -42,7 +68,7 @@ export default function Header({ onMenuClick, onNavigate }: { onMenuClick?: () =
       </div>
 
       <div className="flex items-center space-x-4">
-        <div className="relative" ref={dropdownRef}>
+        {/* <div className="relative" ref={dropdownRef}>
           <button 
             onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
             className="relative p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -87,11 +113,11 @@ export default function Header({ onMenuClick, onNavigate }: { onMenuClick?: () =
               </div>
             </div>
           )}
-        </div>
-        
-        <div 
+        </div> */}
+
+        <div
           className="flex items-center space-x-3 border-l border-slate-200 pl-4 ml-2 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors"
-          onClick={() => onNavigate && onNavigate('meuPerfil')}
+          onClick={() => navigate("/meu-perfil")}
         >
           <img
             className="h-8 w-8 rounded-full object-cover border border-slate-200"
