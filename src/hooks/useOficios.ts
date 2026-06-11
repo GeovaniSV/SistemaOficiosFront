@@ -1,6 +1,7 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
-import { Oficio } from '../types/oficio';
-import { useAppStore } from '../store/useAppStore';
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { Oficio } from "../types/oficio";
+import { useAppStore } from "../store/useAppStore";
+import { api } from "../services/api";
 
 export interface UseOficiosFilters {
   generalSearch: string;
@@ -11,74 +12,104 @@ export interface UseOficiosFilters {
 }
 
 export function useOficios(itemsPerPage: number = 10) {
-  const globalOficios = useAppStore(state => state.oficios);
-  const updateOficioStatusGlobal = useAppStore(state => state.updateOficioStatus);
-  const [oficios, setOficios] = useState<Oficio[]>(globalOficios);
-  
-  // Sync when global changes
-  useEffect(() => {
-    setOficios(globalOficios);
-  }, [globalOficios]);
+  const updateOficioStatusGlobal = useAppStore(
+    (state) => state.updateOficioStatus,
+  );
+  const [oficios, setOficios] = useState<Oficio[]>([]);
+
   const [filters, setFilters] = useState<UseOficiosFilters>({
-    generalSearch: '',
-    statusFilter: '',
-    authorFilter: '',
-    dateFilter: '',
-    origemFilter: ''
+    generalSearch: "",
+    statusFilter: "",
+    authorFilter: "",
+    dateFilter: "",
+    origemFilter: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
+
+  const getOficios = async () => {
+    try {
+      const response = await api.get("/oficios");
+      setOficios(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar ofícios:", error);
+    }
+  };
 
   // Handle initial filter from localStorage
   useEffect(() => {
     const checkFilter = () => {
-      const filter = localStorage.getItem('oficiosInitialFilter');
+      const filter = localStorage.getItem("oficiosInitialFilter");
       if (filter) {
-        setFilters(prev => ({ ...prev, statusFilter: filter }));
-        localStorage.removeItem('oficiosInitialFilter');
+        setFilters((prev) => ({ ...prev, statusFilter: filter }));
+        localStorage.removeItem("oficiosInitialFilter");
       }
     };
-    
+
     checkFilter();
-    window.addEventListener('oficiosFilterChanged', checkFilter);
-    return () => window.removeEventListener('oficiosFilterChanged', checkFilter);
   }, []);
 
   // Reset page when filters change
   useEffect(() => {
+    getOficios();
     setCurrentPage(1);
   }, [filters]);
 
   const filteredOficios = useMemo(() => {
-    return oficios.filter(oficio => {
-      const matchesGeneral = filters.generalSearch === '' || 
-        oficio.id.toLowerCase().includes(filters.generalSearch.toLowerCase()) || 
-        oficio.subject.toLowerCase().includes(filters.generalSearch.toLowerCase());
-      
-      const matchesStatus = filters.statusFilter === '' || oficio.status.toLowerCase() === filters.statusFilter.toLowerCase();
-      const matchesAuthor = filters.authorFilter === '' || oficio.author.toLowerCase().includes(filters.authorFilter.toLowerCase());
-      const matchesDate = filters.dateFilter === '' || oficio.date.includes(filters.dateFilter);
-      const matchesOrigem = filters.origemFilter === '' || 
-        (filters.origemFilter === 'recebido' ? oficio.type === 'recebido' : oficio.type !== 'recebido');
-      
-      return matchesGeneral && matchesStatus && matchesAuthor && matchesDate && matchesOrigem;
+    return oficios.filter((oficio) => {
+      const matchesGeneral =
+        filters.generalSearch === "" ||
+        oficio.id.toLowerCase().includes(filters.generalSearch.toLowerCase()) ||
+        oficio.subject
+          .toLowerCase()
+          .includes(filters.generalSearch.toLowerCase());
+
+      const matchesStatus =
+        filters.statusFilter === "" ||
+        oficio.status.toLowerCase() === filters.statusFilter.toLowerCase();
+      const matchesAuthor =
+        filters.authorFilter === "" ||
+        oficio.author
+          .toLowerCase()
+          .includes(filters.authorFilter.toLowerCase());
+      const matchesDate =
+        filters.dateFilter === "" || oficio.date.includes(filters.dateFilter);
+      const matchesOrigem =
+        filters.origemFilter === "" ||
+        (filters.origemFilter === "recebido"
+          ? oficio.type === "recebido"
+          : oficio.type !== "recebido");
+
+      return (
+        matchesGeneral &&
+        matchesStatus &&
+        matchesAuthor &&
+        matchesDate &&
+        matchesOrigem
+      );
     });
   }, [oficios, filters]);
 
   const totalPages = Math.ceil(filteredOficios.length / itemsPerPage);
-  
+
   const paginatedOficios = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredOficios.slice(start, start + itemsPerPage);
   }, [filteredOficios, currentPage, itemsPerPage]);
 
-  const getOficioById = useCallback((id: string) => {
-    return oficios.find(o => o.id === id);
-  }, [oficios]);
+  const getOficioById = useCallback(
+    (id: string) => {
+      return oficios.find((o) => o.id === id);
+    },
+    [oficios],
+  );
 
   // Provide a proxy setOficios or update specifically? The app probably uses setOficios for status updates
-  const updateOficioStatusLocal = useCallback((id: string, newStatus: string, rejectionInfo?: any) => {
-    updateOficioStatusGlobal(id, newStatus, rejectionInfo);
-  }, [updateOficioStatusGlobal]);
+  const updateOficioStatusLocal = useCallback(
+    (id: string, newStatus: string, rejectionInfo?: any) => {
+      updateOficioStatusGlobal(id, newStatus, rejectionInfo);
+    },
+    [updateOficioStatusGlobal],
+  );
 
   return {
     oficios,
@@ -90,6 +121,6 @@ export function useOficios(itemsPerPage: number = 10) {
     setCurrentPage,
     totalPages,
     paginatedOficios,
-    getOficioById
+    getOficioById,
   };
 }
