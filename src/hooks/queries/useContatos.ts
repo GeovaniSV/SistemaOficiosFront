@@ -14,7 +14,8 @@ export function useContatos() {
 export function useContato(id: number) {
   return useQuery<ContatoType>({
     queryKey: ["contato", id],
-    queryFn: () => api.get(`/api/contacts/${id}`),
+    queryFn: () =>
+      api.get(`/api/contacts/${id}`).then((res) => res.data.data ?? res.data),
   });
 }
 
@@ -23,6 +24,7 @@ export function useAddContato() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (contato: any) => {
+      console.log(contato);
       return api.post("/api/contacts", contato);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["contatos"] }),

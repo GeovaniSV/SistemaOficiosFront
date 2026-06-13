@@ -21,11 +21,6 @@ import { useNavigate } from "react-router-dom";
 function ContatoCreatePage() {
   const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState("");
-  const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
-  const [menuPosition, setMenuPosition] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
   const [formData, setFormData] = useState<ContatoType>({
     id: 0,
     name: "",
@@ -62,7 +57,7 @@ function ContatoCreatePage() {
 
     addContato.mutate(formData);
     setToastMessage("Contato criado com sucesso!");
-    navigate("/contatos/novo");
+    navigate("/contatos");
 
     setTimeout(() => {
       setToastMessage("");
@@ -134,21 +129,12 @@ function ContatoCreatePage() {
     setTimeout(() => setToastMessage(""), 3000);
   };
 
-  console.log("Form Data:", formData);
-
   return (
     <>
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4">
         <div className="p-6 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                setActiveMenuId(null);
-              }}
-              className="rounded-full"
-            >
+            <Button variant="ghost" size="icon" className="rounded-full">
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <h2 className="text-lg font-bold text-slate-900">Novo Contato</h2>

@@ -11,7 +11,6 @@ import "./index.css";
 
 import Login from "./components/Login.tsx";
 import Oficios from "./components/Oficios.tsx";
-import Contatos from "./components/Contatos.tsx";
 import ContatosListPage from "./pages/Contatos/ContatosListPage.tsx";
 import ContatosEditPage from "./pages/Contatos/ContatosEditPage.tsx";
 import ContatosCreatePage from "./pages/Contatos/ContatoCreatePage.tsx";
@@ -21,12 +20,10 @@ const router = createBrowserRouter([
   { path: "*", element: <Navigate to="/login" /> },
   { path: "/login", element: <Login /> },
   { path: "/oficios", element: <Oficios /> },
-
-  { path: "/contatos", element: <Contatos /> },
   {
     element: <AppLayout />,
     children: [
-      { path: "/contatos/novo", element: <ContatosListPage /> },
+      { path: "/contatos/", element: <ContatosListPage /> },
       { path: "/contatos/:id", element: <ContatosEditPage /> },
       { path: "/contatos/criar", element: <ContatosCreatePage /> },
     ],

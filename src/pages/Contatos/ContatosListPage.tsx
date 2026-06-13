@@ -105,7 +105,7 @@ function ContatosListPage() {
                   onClick={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
                     setMenuPosition({ x: e.clientX, y: rect.bottom });
-                    setActiveMenuId(contato.id);
+                    setActiveMenuId(contato.id!);
                   }}
                 >
                   <td className="px-6 py-4">
