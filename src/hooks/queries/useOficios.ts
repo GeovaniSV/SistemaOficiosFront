@@ -2,11 +2,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../services/api";
 
-export function useOficios() {
+export function useOficios(page: number = 1) {
   return useQuery({
-    queryKey: ["oficios"],
+    queryKey: ["oficios", page],
     queryFn: () =>
-      api.get("/api/oficios").then((res) => res.data.data ?? res.data),
+      api.get(`/api/oficios?page=${page}`).then((res) => res.data.data),
   });
 }
 

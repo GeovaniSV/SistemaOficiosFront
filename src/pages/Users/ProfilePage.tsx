@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { data, useNavigate } from "react-router";
 import {
   Camera,
@@ -18,15 +18,12 @@ export default function MeuPerfil() {
   const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState("");
 
-  const { data: profile, isLoading } = useProfile();
-  console.log(profile);
-
   const [profileData, setProfileData] = useState({
-    name: profile.name,
-    email: profile.email,
-    role: profile.is_dev ? "Dev" : "Usuario",
-    cargo: profile.position_id,
-    photoUrl: "https://picsum.photos/seed/user/100/100",
+    name: "",
+    email: "",
+    role: "",
+    cargo: "",
+    photoUrl: "",
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -73,6 +70,17 @@ export default function MeuPerfil() {
     });
     setTimeout(() => setToastMessage(""), 3000);
   };
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    setProfileData({
+      name: user.name,
+      cargo: user.position_id,
+      email: user.email,
+      role: "",
+      photoUrl: "https://picsum.photos/seed/user/100/100",
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex">

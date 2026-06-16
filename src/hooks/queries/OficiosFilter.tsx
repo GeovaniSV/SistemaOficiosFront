@@ -15,6 +15,7 @@ export interface UseOficiosFilters {
 
 export function useOficioFilter(itemsPerPage: number = 10) {
   const { data: oficios = [], refetch } = useOficiosQuery();
+  console.log(oficios);
   const updateStatusMutation = useUpdateOficioStatusMutation();
 
   const [filters, setFilters] = useState<UseOficiosFilters>({

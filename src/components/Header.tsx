@@ -1,9 +1,22 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Bell, Search, Menu, CheckCircle2, Info, FileText } from "lucide-react";
+import { useProfile } from "../hooks/queries/useUsers";
 
 export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const navigate = useNavigate();
+  const [data, setData] = useState({
+    name: "",
+    position: "",
+  });
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    setData({
+      name: user.name,
+      position: user.position_id,
+    });
+  }, []);
 
   return (
     <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 sticky top-0 z-10">
@@ -27,8 +40,8 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
             alt="User avatar"
           />
           <div className="hidden sm:block">
-            <p className="text-sm font-medium text-slate-700">João Silva</p>
-            <p className="text-xs text-slate-500">Administrador</p>
+            <p className="text-sm font-medium text-slate-700">{data.name}</p>
+            <p className="text-xs text-slate-500">{data.position}</p>
           </div>
         </div>
       </div>

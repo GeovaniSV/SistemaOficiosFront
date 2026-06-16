@@ -12,7 +12,7 @@ import { NovoOficioPreviewModal } from "@/src/components/NovoOficioPreviewModal"
 import { NovoOficioTemplateModal } from "@/src/components/NovoOficioTemplateModal";
 
 const PriorityHash: Record<string, string> = {
-  normal: "NORMAL",
+  normal: "MEDIUM",
   baixa: "LOW",
   alta: "HIGH",
   urgente: "URGENT",
