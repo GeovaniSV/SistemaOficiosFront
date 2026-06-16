@@ -16,11 +16,12 @@ import EditContato from "./pages/Contatos/EditContato.tsx";
 import CreateContato from "./pages/Contatos/CreateContato.tsx";
 import AppLayout from "./AppLayout.tsx";
 import CreateOficios from "./pages/Oficios/CreateOficios.tsx";
+import ListOficios from "./pages/Oficios/ListOficios.tsx";
 
 const router = createBrowserRouter([
   { path: "*", element: <Navigate to="/login" /> },
   { path: "/login", element: <Login /> },
-  { path: "/oficios", element: <Oficios /> },
+  // { path: "/oficios", element: <Oficios /> },
   {
     element: <AppLayout />,
     children: [
@@ -31,6 +32,7 @@ const router = createBrowserRouter([
 
       //Oficios
       { path: "/oficios/criar", element: <CreateOficios /> },
+      { path: "/oficios", element: <ListOficios /> },
     ],
   },
 ]);

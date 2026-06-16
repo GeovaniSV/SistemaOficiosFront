@@ -11,7 +11,7 @@ import {
 import { UseOficiosFilters } from "../hooks/useOficios";
 import { Input } from "./ui/Input";
 import { Select } from "./ui/Select";
-import { api } from "../services/api";
+import { useContatos } from "../hooks/queries/useContatos";
 
 interface OficiosFiltersProps {
   filters: UseOficiosFilters;
@@ -24,7 +24,7 @@ interface OficiosFiltersProps {
   setSelectedDestinatario: (destinatario: any) => void;
 }
 
-export function OficiosFilters({
+function OficiosFilters({
   filters,
   setFilters,
   destinatarioSearch,
@@ -34,10 +34,7 @@ export function OficiosFilters({
   selectedDestinatario,
   setSelectedDestinatario,
 }: OficiosFiltersProps) {
-  const [destinatarios, setDestinatarios] = React.useState<any[]>([]);
-  useEffect(() => {
-    api.get("/api/contatos").then((res) => setDestinatarios(res.data));
-  }, []);
+  const { data: destinatarios = [] } = useContatos();
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mb-6">
       <div className="flex items-center mb-4">
@@ -74,7 +71,7 @@ export function OficiosFilters({
               type="text"
               value={
                 selectedDestinatario
-                  ? `${selectedDestinatario.responsibleName} (${selectedDestinatario.name})`
+                  ? `${selectedDestinatario.name} (${selectedDestinatario.name})`
                   : destinatarioSearch
               }
               onChange={(e) => {
@@ -94,7 +91,7 @@ export function OficiosFilters({
                 <ul className="max-h-60 overflow-y-auto py-1">
                   {destinatarios
                     .filter(
-                      (d) =>
+                      (d: any) =>
                         d.name
                           .toLowerCase()
                           .includes(destinatarioSearch.toLowerCase()) ||
@@ -102,7 +99,7 @@ export function OficiosFilters({
                           d.subArea
                             .toLowerCase()
                             .includes(destinatarioSearch.toLowerCase())) ||
-                        d.responsibleName
+                        d.name
                           .toLowerCase()
                           .includes(destinatarioSearch.toLowerCase()),
                     )
@@ -124,7 +121,7 @@ export function OficiosFilters({
                           )}
                           <div>
                             <p className="text-sm font-medium text-slate-900">
-                              {dest.responsibleName}
+                              {dest.name}
                             </p>
                             <p className="text-xs text-slate-500">
                               {dest.name}
@@ -214,3 +211,5 @@ export function OficiosFilters({
     </div>
   );
 }
+
+export default OficiosFilters;

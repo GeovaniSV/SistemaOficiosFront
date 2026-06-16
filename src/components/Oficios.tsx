@@ -16,7 +16,7 @@ import { useUrlSync } from "../hooks/useUrlSync";
 import { OficioPreviewModal } from "./OficioPreviewModal";
 import { OficioEvaluationModal } from "./OficioEvaluationModal";
 import { OficioInfoModal } from "./OficioInfoModal";
-import { OficiosFilters } from "./OficiosFilters";
+// import { OficiosFilters } from "./OficiosFilters";
 import { OficiosList } from "./OficiosList";
 import { OficiosContextMenu } from "./OficiosContextMenu";
 
@@ -163,7 +163,7 @@ export default function Oficios() {
           </div>
 
           {/* Filters Section */}
-          <OficiosFilters
+          {/* <OficiosFilters
             filters={filters}
             setFilters={setFilters}
             destinatarioSearch={destinatarioSearch}
@@ -172,7 +172,7 @@ export default function Oficios() {
             setIsDropdownOpen={setIsDropdownOpen}
             selectedDestinatario={selectedDestinatario}
             setSelectedDestinatario={setSelectedDestinatario}
-          />
+          /> */}
 
           {/* Table Section */}
           <OficiosList

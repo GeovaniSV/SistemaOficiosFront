@@ -5,7 +5,7 @@ export interface RejectionInfo {
   type: string;
 }
 
-export type OficioType = 'interno' | 'recebido';
+export type OficioType = "interno" | "recebido";
 
 export interface Oficio {
   id: string; // System number
