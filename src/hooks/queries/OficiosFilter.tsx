@@ -3,17 +3,17 @@ import { useState, useMemo, useCallback } from "react";
 import {
   useOficios as useOficiosQuery,
   useUpdateOficioStatus as useUpdateOficioStatusMutation,
-} from "./queries/useOficios";
+} from "./useOficios";
 
 export interface UseOficiosFilters {
   generalSearch: string;
   statusFilter: string;
   authorFilter: string;
   dateFilter: string;
-  origemFilter: string;
+  // origemFilter: string;
 }
 
-export function useOficios(itemsPerPage: number = 10) {
+export function useOficioFilter(itemsPerPage: number = 10) {
   const { data: oficios = [], refetch } = useOficiosQuery();
   const updateStatusMutation = useUpdateOficioStatusMutation();
 
@@ -22,7 +22,7 @@ export function useOficios(itemsPerPage: number = 10) {
     statusFilter: "",
     authorFilter: "",
     dateFilter: "",
-    origemFilter: "",
+    // origemFilter: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -51,19 +51,13 @@ export function useOficios(itemsPerPage: number = 10) {
       const matchesDate =
         filters.dateFilter === "" || oficio.date?.includes(filters.dateFilter);
 
-      const matchesOrigem =
-        filters.origemFilter === "" ||
-        (filters.origemFilter === "recebido"
-          ? oficio.type === "recebido"
-          : oficio.type !== "recebido");
+      // const matchesOrigem =
+      //   filters.origemFilter === "" ||
+      //   (filters.origemFilter === "recebido"
+      //     ? oficio.type === "recebido"
+      //     : oficio.type !== "recebido");
 
-      return (
-        matchesGeneral &&
-        matchesStatus &&
-        matchesAuthor &&
-        matchesDate &&
-        matchesOrigem
-      );
+      return matchesGeneral && matchesStatus && matchesAuthor && matchesDate;
     });
   }, [oficios, filters]);
 

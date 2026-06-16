@@ -1,17 +1,11 @@
 import React, { useEffect } from "react";
-import {
-  Search,
-  Filter,
-  Building2,
-  User,
-  Tag,
-  Layers,
-  CalendarDays,
-} from "lucide-react";
-import { UseOficiosFilters } from "../hooks/useOficios";
+import { Search, Filter, Building2, User, Tag, Plus } from "lucide-react";
+import { UseOficiosFilters } from "../hooks/queries/OficiosFilter";
 import { Input } from "./ui/Input";
 import { Select } from "./ui/Select";
 import { useContatos } from "../hooks/queries/useContatos";
+import { Button } from "./ui/Button";
+import { useNavigate } from "react-router-dom";
 
 interface OficiosFiltersProps {
   filters: UseOficiosFilters;
@@ -24,7 +18,7 @@ interface OficiosFiltersProps {
   setSelectedDestinatario: (destinatario: any) => void;
 }
 
-function OficiosFilters({
+export function OficiosFilters({
   filters,
   setFilters,
   destinatarioSearch,
@@ -34,14 +28,26 @@ function OficiosFilters({
   selectedDestinatario,
   setSelectedDestinatario,
 }: OficiosFiltersProps) {
+  const navigate = useNavigate();
   const { data: destinatarios = [] } = useContatos();
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mb-6">
-      <div className="flex items-center mb-4">
-        <Filter className="w-5 h-5 text-slate-400 mr-2" />
-        <h2 className="text-sm font-semibold text-slate-700">
-          Filtros de Busca
-        </h2>
+      <div className="flex items-center mb-4 justify-between">
+        <div className="flex">
+          {" "}
+          <Filter className="w-5 h-5 text-slate-400 mr-2" />
+          <h2 className="text-sm font-semibold text-slate-700">
+            Filtros de Busca
+          </h2>
+        </div>
+
+        <Button
+          className="cursor-pointer"
+          onClick={() => navigate("/oficios/criar")}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Novo Ofício
+        </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         <div className="space-y-1.5 lg:col-span-2">
@@ -156,7 +162,6 @@ function OficiosFilters({
             <option value="aprovado">Aprovado</option>
             <option value="enviado">Enviado</option>
             <option value="rascunho">Rascunho</option>
-            <option value="devolvido">Devolvido</option>
             <option value="rejeitado">Rejeitado</option>
           </Select>
         </div>
@@ -178,7 +183,7 @@ function OficiosFilters({
           </div>
         </div>
 
-        <div className="space-y-1.5">
+        {/* <div className="space-y-1.5">
           <label className="block text-xs font-medium text-slate-700">
             Origem / Tipo
           </label>
@@ -193,7 +198,7 @@ function OficiosFilters({
             <option value="interno">Gerado Interno</option>
             <option value="recebido">Recebido Externo</option>
           </Select>
-        </div>
+        </div> */}
 
         <div className="space-y-1.5">
           <label className="block text-xs font-medium text-slate-700">

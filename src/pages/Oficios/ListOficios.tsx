@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { useOficios } from "../../hooks/oficiosFilter";
+import {
+  useOficioFilter,
+  UseOficiosFilters,
+} from "../../hooks/queries/OficiosFilter";
 import { OficioPreviewModal } from "../../components/OficioPreviewModal";
 import { OficioEvaluationModal } from "../../components/OficioEvaluationModal";
 import { OficioInfoModal } from "../../components/OficioInfoModal";
-import OficiosFilters from "../../components/OficiosFilters";
+import { OficiosFilters } from "../../components/OficiosFilters";
 import { OficiosList } from "../../components/OficiosList";
 import { OficiosContextMenu } from "../../components/OficiosContextMenu";
 import { CheckCircle2 } from "lucide-react";
@@ -35,7 +38,7 @@ export function ListOficios() {
     totalPages,
     paginatedOficios,
     getOficioById,
-  } = useOficios(10);
+  } = useOficioFilter(10);
 
   const handleClosePreview = () => {
     setPreviewOficio(null);
