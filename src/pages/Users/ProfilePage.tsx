@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router";
+import { data, useNavigate } from "react-router";
 import {
   Camera,
   Save,
@@ -10,21 +10,22 @@ import {
   Shield,
   Briefcase,
 } from "lucide-react";
-import Sidebar from "./Sidebar";
-import Header from "./Header";
-import { Button } from "./ui/Button";
-import { Input } from "./ui/Input";
+import { Button } from "../../components/ui/Button";
+import { Input } from "../../components/ui/Input";
+import { useProfile } from "@/src/hooks/queries/useUsers";
 
 export default function MeuPerfil() {
   const navigate = useNavigate();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
+  const { data: profile, isLoading } = useProfile();
+  console.log(profile);
+
   const [profileData, setProfileData] = useState({
-    name: "João Silva",
-    email: "joao.silva@exemplo.com",
-    role: "Administrador",
-    cargo: "Presidente",
+    name: profile.name,
+    email: profile.email,
+    role: profile.is_dev ? "Dev" : "Usuario",
+    cargo: profile.position_id,
     photoUrl: "https://picsum.photos/seed/user/100/100",
   });
 
@@ -75,14 +76,7 @@ export default function MeuPerfil() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex">
-      <Sidebar
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-      />
-
       <div className="flex-1 md:pl-64 flex flex-col min-h-screen w-full">
-        <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
-
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center mb-8">
