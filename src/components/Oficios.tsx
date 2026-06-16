@@ -108,7 +108,7 @@ export default function Oficios() {
               <div className="relative" ref={newMenuRef}>
                 <Button onClick={() => setIsNewMenuOpen(!isNewMenuOpen)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Novo Ofício caba
+                  Novo Ofício
                   <ChevronDown
                     className={`w-4 h-4 ml-2 transition-transform ${isNewMenuOpen ? "rotate-180" : ""}`}
                   />
