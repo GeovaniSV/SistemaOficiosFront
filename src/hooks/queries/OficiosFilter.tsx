@@ -1,5 +1,6 @@
 // src/hooks/useOficios.ts
 import { useState, useMemo, useCallback } from "react";
+import { format, isSameDay, parseISO } from "date-fns";
 import {
   useOficios as useOficiosQuery,
   useUpdateOficioStatus as useUpdateOficioStatusMutation,
@@ -15,7 +16,6 @@ export interface UseOficiosFilters {
 
 export function useOficioFilter(itemsPerPage: number = 10) {
   const { data: oficios = [], refetch } = useOficiosQuery();
-  console.log(oficios);
   const updateStatusMutation = useUpdateOficioStatusMutation();
 
   const [filters, setFilters] = useState<UseOficiosFilters>({
@@ -29,6 +29,7 @@ export function useOficioFilter(itemsPerPage: number = 10) {
 
   const filteredOficios = useMemo(() => {
     return oficios.filter((oficio: any) => {
+      const oficioDate = format(new Date(oficio.created_at), "dd/MM/yyyy");
       const matchesGeneral =
         filters.generalSearch === "" ||
         oficio.id
@@ -45,12 +46,13 @@ export function useOficioFilter(itemsPerPage: number = 10) {
 
       const matchesAuthor =
         filters.authorFilter === "" ||
-        oficio.author
+        oficio.author.name
           ?.toLowerCase()
           .includes(filters.authorFilter.toLowerCase());
 
       const matchesDate =
-        filters.dateFilter === "" || oficio.date?.includes(filters.dateFilter);
+        filters.dateFilter === "" ||
+        isSameDay(parseISO(oficio.created_at), parseISO(filters.dateFilter));
 
       // const matchesOrigem =
       //   filters.origemFilter === "" ||

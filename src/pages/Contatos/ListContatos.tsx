@@ -44,7 +44,6 @@ function ContatosListPage() {
   }, [searchTerm]);
 
   const handleEditContact = (contato: number) => {
-    console.log("Edit contact with ID:", contato);
     const foundContato = contatos.find((c: ContatoType) => c.id === contato);
     if (foundContato) {
       setActiveMenuId(null);

@@ -32,8 +32,9 @@ const router = createBrowserRouter([
       { path: "/contatos/criar", element: <CreateContato /> },
 
       //Oficios
-      { path: "/oficios/criar", element: <CreateOficios /> },
       { path: "/oficios", element: <ListOficios /> },
+      { path: "/oficios/criar", element: <CreateOficios /> },
+      { path: "/oficios/:id", element: <ListOficios /> },
 
       //Users
       { path: "/perfil", element: <MeuPerfil /> },

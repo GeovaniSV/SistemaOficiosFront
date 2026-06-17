@@ -82,9 +82,6 @@ export function ListOficios() {
         setInfoOficio={setInfoOficio}
         setEvaluatingOficio={setEvaluatingOficio}
         setToastMessage={setToastMessage}
-        onNavigate={(view) =>
-          navigate(`/${view === "novoOficio" ? "oficios/novo" : view}`)
-        }
       />
 
       <OficioEvaluationModal

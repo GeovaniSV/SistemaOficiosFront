@@ -2,54 +2,11 @@ import React from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Oficio } from "../types/oficio";
+import { Oficios } from "../types/oficio";
 import { formatOficioNumber } from "../utils/formatters";
 import { STATUS_DOT_STYLES } from "../constants/oficios";
 import { StatusBadge } from "./ui/StatusBadge";
 import { Button } from "./ui/Button";
-
-interface OficiosListProps {
-  paginatedOficios: {
-    id: number | null;
-    author: {
-      id: number;
-      cpf: string;
-      email: string;
-      name: string;
-      is_active: boolean;
-      is_dev: boolean;
-      position_id: number;
-    };
-    author_id: number;
-    content: string;
-    department: string;
-    destination_contact: {
-      address_id: number;
-      doc: string;
-      id: number;
-      name: string;
-      type: string;
-    };
-    priority: string;
-    responsible: {
-      contact_id: number;
-      department: string;
-      email: string;
-      name: string;
-      position: string;
-      treatment: string;
-    }[];
-    status: string;
-    subject: string;
-    created_at: string;
-  }[];
-  activeMenuId: number | null;
-  setActiveMenuId: (id: number | null) => void;
-  setMenuPosition: (pos: { x: number; y: number }) => void;
-  currentPage: number;
-  setCurrentPage: (page: number) => void;
-  totalPages: number;
-}
 
 export function OficiosList({
   paginatedOficios,
@@ -59,7 +16,7 @@ export function OficiosList({
   currentPage,
   setCurrentPage,
   totalPages,
-}: OficiosListProps) {
+}: Oficios) {
   return (
     <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
       <div className="overflow-x-auto">

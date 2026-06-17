@@ -35,12 +35,7 @@ function CreateOficios() {
     destination_contact_id: "",
   });
 
-  console.log(selectedResponsibles);
-  // console.log(formData);
   const addOficio = useAddOficio();
-
-  // console.log("Destinatários: ", selectedDestinatarios);
-  // console.log("Responsibles: ", selectedResponsibleIds);
 
   const [rejectionInfo, setRejectionInfo] = useState<any>(null);
 
@@ -98,7 +93,6 @@ function CreateOficios() {
         return;
       }
 
-      console.log(payload);
       addOficio.mutate(payload);
     });
 

@@ -1,17 +1,17 @@
-import React, { SetStateAction } from 'react';
-import { Eye, Info, Download, Edit2, FileCheck } from 'lucide-react';
-import { Oficio } from '../types/oficio';
+import React, { SetStateAction } from "react";
+import { useNavigate } from "react-router-dom";
+import { Eye, Info, Download, Edit2, FileCheck } from "lucide-react";
+import { Oficio } from "../types/oficio";
 
 interface OficiosContextMenuProps {
   activeMenuId: string | null;
-  menuPosition: { x: number, y: number } | null;
+  menuPosition: { x: number; y: number } | null;
   setActiveMenuId: (id: string | null) => void;
   getOficioById: (id: string) => Oficio | undefined;
   setPreviewOficio: (oficio: Oficio) => void;
   setInfoOficio: (oficio: Oficio) => void;
   setEvaluatingOficio: (oficio: Oficio) => void;
   setToastMessage: (msg: string) => void;
-  onNavigate: (view: string) => void;
 }
 
 export function OficiosContextMenu({
@@ -23,29 +23,33 @@ export function OficiosContextMenu({
   setInfoOficio,
   setEvaluatingOficio,
   setToastMessage,
-  onNavigate
 }: OficiosContextMenuProps) {
+  const navigate = useNavigate();
   if (!activeMenuId || !menuPosition) return null;
 
   const activeOficio = getOficioById(activeMenuId);
   if (!activeOficio) return null;
 
   const showVisualizar = true;
-  const showEditar = activeOficio.status === 'Pendente' || activeOficio.status === 'Rascunho' || activeOficio.status === 'Devolvido';
-  const showAvaliar = activeOficio.status === 'Pendente';
-  const showDownload = activeOficio.status === 'Aprovado';
-  const showInformacoes = activeOficio.status === 'Rejeitado' || activeOficio.status === 'Devolvido';
+  const showEditar =
+    activeOficio.status === "PENDING" || activeOficio.status === "DRAFT";
+  const showAvaliar = activeOficio.status === "PENDING";
+  const showDownload = activeOficio.status === "APROVED";
+  const showInformacoes = activeOficio.status === "REJECTED";
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-slate-900/20 sm:bg-transparent transition-opacity" onClick={() => setActiveMenuId(null)} />
-      
+      <div
+        className="fixed inset-0 z-40 bg-slate-900/20 sm:bg-transparent transition-opacity"
+        onClick={() => setActiveMenuId(null)}
+      />
+
       {/* Desktop Context Menu */}
-      <div 
+      <div
         className="hidden sm:block fixed z-50 bg-white rounded-xl shadow-xl border border-slate-200 py-2 min-w-[180px] overflow-hidden animate-in fade-in zoom-in-95 duration-100"
-        style={{ 
-          top: Math.min(menuPosition.y, window.innerHeight - 150), 
-          left: Math.min(menuPosition.x, window.innerWidth - 200) 
+        style={{
+          top: Math.min(menuPosition.y, window.innerHeight - 150),
+          left: Math.min(menuPosition.x, window.innerWidth - 200),
         }}
       >
         <div className="flex flex-col">
@@ -76,8 +80,10 @@ export function OficiosContextMenu({
           {showDownload && (
             <button
               onClick={() => {
-                setToastMessage(`Download do PDF iniciado para o ofício ${activeOficio.id}`);
-                setTimeout(() => setToastMessage(''), 3000);
+                setToastMessage(
+                  `Download do PDF iniciado para o ofício ${activeOficio.id}`,
+                );
+                setTimeout(() => setToastMessage(""), 3000);
                 setActiveMenuId(null);
               }}
               className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors w-full text-left"
@@ -89,13 +95,16 @@ export function OficiosContextMenu({
           {showEditar && (
             <button
               onClick={() => {
-                localStorage.setItem('editOficioId', activeOficio.id);
+                localStorage.setItem("editOficioId", activeOficio.id);
                 if (activeOficio.rejectionInfo) {
-                  localStorage.setItem('editOficioRejectionInfo', JSON.stringify(activeOficio.rejectionInfo));
+                  localStorage.setItem(
+                    "editOficioRejectionInfo",
+                    JSON.stringify(activeOficio.rejectionInfo),
+                  );
                 } else {
-                  localStorage.removeItem('editOficioRejectionInfo');
+                  localStorage.removeItem("editOficioRejectionInfo");
                 }
-                onNavigate('novoOficio');
+                navigate(`/oficios/${activeOficio.id}`);
                 setActiveMenuId(null);
               }}
               className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors w-full text-left"
@@ -125,10 +134,14 @@ export function OficiosContextMenu({
         <div className="px-4 pb-6">
           <div className="flex flex-col space-y-2">
             <div className="mb-2 px-2">
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Opções do Ofício</p>
-              <p className="text-sm font-semibold text-slate-900 truncate">{activeOficio.id} - {activeOficio.subject}</p>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                Opções do Ofício
+              </p>
+              <p className="text-sm font-semibold text-slate-900 truncate">
+                {activeOficio.id} - {activeOficio.subject}
+              </p>
             </div>
-            
+
             {showVisualizar && (
               <button
                 onClick={() => {
@@ -156,8 +169,10 @@ export function OficiosContextMenu({
             {showDownload && (
               <button
                 onClick={() => {
-                  setToastMessage(`Download do PDF iniciado para o ofício ${activeOficio.id}`);
-                  setTimeout(() => setToastMessage(''), 3000);
+                  setToastMessage(
+                    `Download do PDF iniciado para o ofício ${activeOficio.id}`,
+                  );
+                  setTimeout(() => setToastMessage(""), 3000);
                   setActiveMenuId(null);
                 }}
                 className="flex items-center justify-center px-4 py-3 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl active:bg-emerald-100 transition-colors w-full"
@@ -170,11 +185,14 @@ export function OficiosContextMenu({
               <button
                 onClick={() => {
                   if (activeOficio.rejectionInfo) {
-                    localStorage.setItem('editOficioRejectionInfo', JSON.stringify(activeOficio.rejectionInfo));
+                    localStorage.setItem(
+                      "editOficioRejectionInfo",
+                      JSON.stringify(activeOficio.rejectionInfo),
+                    );
                   } else {
-                    localStorage.removeItem('editOficioRejectionInfo');
+                    localStorage.removeItem("editOficioRejectionInfo");
                   }
-                  onNavigate('novoOficio');
+                  navigate("/oficios/criar");
                   setActiveMenuId(null);
                 }}
                 className="flex items-center justify-center px-4 py-3 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl active:bg-emerald-100 transition-colors w-full"
