@@ -2,11 +2,31 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../services/api";
 
-export function useOficios() {
+export function useOficios(page: number = 1) {
   return useQuery({
-    queryKey: ["oficios"],
+    queryKey: ["oficios", page],
     queryFn: () =>
-      api.get("/api/oficios").then((res) => res.data.data ?? res.data),
+      api.get(`/api/oficios?page=${page}`).then((res) => res.data.data),
+  });
+}
+
+export function useOficio(id: number) {
+  return useQuery({
+    queryKey: ["oficio"],
+    queryFn: () =>
+      api.get(`/api/oficios/${id}`).then((res) => res.data.data ?? res.data),
+  });
+}
+
+// POST
+export function useAddOficio() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (oficio: any) => {
+      console.log(oficio);
+      return api.post("/api/oficios", oficio);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["oficios"] }),
   });
 }
 

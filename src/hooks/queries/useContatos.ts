@@ -24,7 +24,6 @@ export function useAddContato() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (contato: any) => {
-      console.log(contato);
       return api.post("/api/contacts", contato);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["contatos"] }),

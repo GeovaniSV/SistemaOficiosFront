@@ -1,17 +1,11 @@
 import React, { useEffect } from "react";
-import {
-  Search,
-  Filter,
-  Building2,
-  User,
-  Tag,
-  Layers,
-  CalendarDays,
-} from "lucide-react";
-import { UseOficiosFilters } from "../hooks/useOficios";
+import { Search, Filter, Building2, User, Tag, Plus } from "lucide-react";
+import { UseOficiosFilters } from "../hooks/queries/OficiosFilter";
 import { Input } from "./ui/Input";
 import { Select } from "./ui/Select";
-import { api } from "../services/api";
+import { useContatos } from "../hooks/queries/useContatos";
+import { Button } from "./ui/Button";
+import { useNavigate } from "react-router-dom";
 
 interface OficiosFiltersProps {
   filters: UseOficiosFilters;
@@ -34,17 +28,26 @@ export function OficiosFilters({
   selectedDestinatario,
   setSelectedDestinatario,
 }: OficiosFiltersProps) {
-  const [destinatarios, setDestinatarios] = React.useState<any[]>([]);
-  useEffect(() => {
-    api.get("/api/contatos").then((res) => setDestinatarios(res.data));
-  }, []);
+  const navigate = useNavigate();
+  const { data: destinatarios = [] } = useContatos();
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mb-6">
-      <div className="flex items-center mb-4">
-        <Filter className="w-5 h-5 text-slate-400 mr-2" />
-        <h2 className="text-sm font-semibold text-slate-700">
-          Filtros de Busca
-        </h2>
+      <div className="flex items-center mb-4 justify-between">
+        <div className="flex">
+          {" "}
+          <Filter className="w-5 h-5 text-slate-400 mr-2" />
+          <h2 className="text-sm font-semibold text-slate-700">
+            Filtros de Busca
+          </h2>
+        </div>
+
+        <Button
+          className="cursor-pointer"
+          onClick={() => navigate("/oficios/criar")}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Novo Ofício
+        </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         <div className="space-y-1.5 lg:col-span-2">
@@ -66,85 +69,6 @@ export function OficiosFilters({
 
         <div className="space-y-1.5">
           <label className="block text-xs font-medium text-slate-700">
-            Destinatário
-          </label>
-          <div className="relative">
-            <Input
-              icon={<Search className="w-4 h-4" />}
-              type="text"
-              value={
-                selectedDestinatario
-                  ? `${selectedDestinatario.responsibleName} (${selectedDestinatario.name})`
-                  : destinatarioSearch
-              }
-              onChange={(e) => {
-                setDestinatarioSearch(e.target.value);
-                setSelectedDestinatario(null);
-                setIsDropdownOpen(true);
-              }}
-              onFocus={() => setIsDropdownOpen(true)}
-              onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
-              placeholder="Filtrar por destinatário..."
-              autoComplete="off"
-            />
-
-            {/* Dropdown de Destinatários */}
-            {isDropdownOpen && (
-              <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
-                <ul className="max-h-60 overflow-y-auto py-1">
-                  {destinatarios
-                    .filter(
-                      (d) =>
-                        d.name
-                          .toLowerCase()
-                          .includes(destinatarioSearch.toLowerCase()) ||
-                        (d.subArea &&
-                          d.subArea
-                            .toLowerCase()
-                            .includes(destinatarioSearch.toLowerCase())) ||
-                        d.responsibleName
-                          .toLowerCase()
-                          .includes(destinatarioSearch.toLowerCase()),
-                    )
-                    .map((dest: any) => (
-                      <li
-                        key={dest.id}
-                        onClick={() => {
-                          setSelectedDestinatario(dest);
-                          setDestinatarioSearch("");
-                          setIsDropdownOpen(false);
-                        }}
-                        className="px-4 py-2.5 hover:bg-slate-50 cursor-pointer flex items-center justify-between group"
-                      >
-                        <div className="flex items-center">
-                          {dest.type === "PJ" ? (
-                            <Building2 className="h-4 w-4 text-slate-400 mr-3 group-hover:text-emerald-500" />
-                          ) : (
-                            <User className="h-4 w-4 text-slate-400 mr-3 group-hover:text-emerald-500" />
-                          )}
-                          <div>
-                            <p className="text-sm font-medium text-slate-900">
-                              {dest.responsibleName}
-                            </p>
-                            <p className="text-xs text-slate-500">
-                              {dest.name}
-                              {dest.subArea ? ` - ${dest.subArea}` : ""}
-                            </p>
-                          </div>
-                        </div>
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                          {dest.type}
-                        </span>
-                      </li>
-                    ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="block text-xs font-medium text-slate-700">
             Status
           </label>
           <Select
@@ -159,7 +83,6 @@ export function OficiosFilters({
             <option value="aprovado">Aprovado</option>
             <option value="enviado">Enviado</option>
             <option value="rascunho">Rascunho</option>
-            <option value="devolvido">Devolvido</option>
             <option value="rejeitado">Rejeitado</option>
           </Select>
         </div>
@@ -181,7 +104,7 @@ export function OficiosFilters({
           </div>
         </div>
 
-        <div className="space-y-1.5">
+        {/* <div className="space-y-1.5">
           <label className="block text-xs font-medium text-slate-700">
             Origem / Tipo
           </label>
@@ -196,7 +119,7 @@ export function OficiosFilters({
             <option value="interno">Gerado Interno</option>
             <option value="recebido">Recebido Externo</option>
           </Select>
-        </div>
+        </div> */}
 
         <div className="space-y-1.5">
           <label className="block text-xs font-medium text-slate-700">
@@ -214,3 +137,5 @@ export function OficiosFilters({
     </div>
   );
 }
+
+export default OficiosFilters;

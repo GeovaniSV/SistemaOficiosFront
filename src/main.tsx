@@ -11,21 +11,33 @@ import "./index.css";
 
 import Login from "./components/Login.tsx";
 import Oficios from "./components/Oficios.tsx";
-import ContatosListPage from "./pages/Contatos/ContatosListPage.tsx";
-import ContatosEditPage from "./pages/Contatos/ContatosEditPage.tsx";
-import ContatosCreatePage from "./pages/Contatos/ContatoCreatePage.tsx";
+import ListContatos from "./pages/Contatos/ListContatos.tsx";
+import EditContato from "./pages/Contatos/EditContato.tsx";
+import CreateContato from "./pages/Contatos/CreateContato.tsx";
 import AppLayout from "./AppLayout.tsx";
+import CreateOficios from "./pages/Oficios/CreateOficios.tsx";
+import ListOficios from "./pages/Oficios/ListOficios.tsx";
+import MeuPerfil from "./pages/Users/ProfilePage.tsx";
 
 const router = createBrowserRouter([
   { path: "*", element: <Navigate to="/login" /> },
   { path: "/login", element: <Login /> },
-  { path: "/oficios", element: <Oficios /> },
+  // { path: "/oficios", element: <Oficios /> },
   {
     element: <AppLayout />,
     children: [
-      { path: "/contatos/", element: <ContatosListPage /> },
-      { path: "/contatos/:id", element: <ContatosEditPage /> },
-      { path: "/contatos/criar", element: <ContatosCreatePage /> },
+      //Contatos
+      { path: "/contatos/", element: <ListContatos /> },
+      { path: "/contatos/:id", element: <EditContato /> },
+      { path: "/contatos/criar", element: <CreateContato /> },
+
+      //Oficios
+      { path: "/oficios", element: <ListOficios /> },
+      { path: "/oficios/criar", element: <CreateOficios /> },
+      { path: "/oficios/:id", element: <ListOficios /> },
+
+      //Users
+      { path: "/perfil", element: <MeuPerfil /> },
     ],
   },
 ]);

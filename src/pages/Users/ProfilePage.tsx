@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router";
+import React, { useState, useRef, useEffect } from "react";
+import { data, useNavigate } from "react-router";
 import {
   Camera,
   Save,
@@ -10,22 +10,20 @@ import {
   Shield,
   Briefcase,
 } from "lucide-react";
-import Sidebar from "./Sidebar";
-import Header from "./Header";
-import { Button } from "./ui/Button";
-import { Input } from "./ui/Input";
+import { Button } from "../../components/ui/Button";
+import { Input } from "../../components/ui/Input";
+import { useProfile } from "@/src/hooks/queries/useUsers";
 
 export default function MeuPerfil() {
   const navigate = useNavigate();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
   const [profileData, setProfileData] = useState({
-    name: "João Silva",
-    email: "joao.silva@exemplo.com",
-    role: "Administrador",
-    cargo: "Presidente",
-    photoUrl: "https://picsum.photos/seed/user/100/100",
+    name: "",
+    email: "",
+    role: "",
+    cargo: "",
+    photoUrl: "",
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -73,16 +71,20 @@ export default function MeuPerfil() {
     setTimeout(() => setToastMessage(""), 3000);
   };
 
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    setProfileData({
+      name: user.name,
+      cargo: user.position_id,
+      email: user.email,
+      role: "",
+      photoUrl: "https://picsum.photos/seed/user/100/100",
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex">
-      <Sidebar
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-      />
-
       <div className="flex-1 md:pl-64 flex flex-col min-h-screen w-full">
-        <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
-
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center mb-8">
