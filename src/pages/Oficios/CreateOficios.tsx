@@ -23,9 +23,7 @@ function CreateOficios() {
   const [destinatarioSearch, setDestinatarioSearch] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedDestinatarios, setSelectedDestinatarios] = useState<any[]>([]);
-  const [selectedResponsibleIds, setSelectedResponsibleIds] = useState<
-    string[]
-  >([]);
+  const [selectedResponsibles, setSelectedResponsibles] = useState<any[]>([]);
   const [expandedRecipientId, setExpandedRecipientId] = useState<number | null>(
     null,
   );
@@ -35,12 +33,13 @@ function CreateOficios() {
     priority: "normal",
     content: "",
     destination_contact_id: "",
-    responsible_ids: [] as string[],
   });
 
+  console.log(selectedResponsibles);
+  // console.log(formData);
   const addOficio = useAddOficio();
 
-  console.log("Destinatários: ", selectedDestinatarios);
+  // console.log("Destinatários: ", selectedDestinatarios);
   // console.log("Responsibles: ", selectedResponsibleIds);
 
   const [rejectionInfo, setRejectionInfo] = useState<any>(null);
@@ -55,52 +54,56 @@ function CreateOficios() {
   const { data: contatos = [], isLoading } = useContatos();
 
   const handleSubmit = () => {
-    console.log(formData.priority);
-    const payload = {
-      ...formData,
-      content: content,
-      responsible_ids: selectedResponsibleIds,
-      destination_contact_id: selectedDestinatarios[0]?.id,
-      priority: PriorityHash[formData.priority],
-    };
+    selectedResponsibles.map((res) => {
+      res.id;
+      res.departament;
+      const payload = {
+        ...formData,
+        content: content,
+        responsibles: [res.id],
+        destination_contact_id: selectedDestinatarios[0]?.id,
+        priority: PriorityHash[formData.priority],
+        department: res.department,
+      };
 
-    if (!payload.destination_contact_id) {
-      setToastType("error");
-      setToastMessage("Por favor, selecione pelo menos um destinatário.");
-      setTimeout(() => setToastMessage(""), 3000);
-      return;
-    }
-    if (!payload.responsible_ids) {
-      setToastType("error");
-      setToastMessage("Por favor, selecione pelo menos um responsável.");
-      setTimeout(() => setToastMessage(""), 3000);
-      return;
-    }
-    if (!payload.subject) {
-      setToastType("error");
-      setToastMessage("Por favor, preencha o assunto.");
-      setTimeout(() => setToastMessage(""), 3000);
-      return;
-    }
-    if (!payload.content.trim()) {
-      setToastType("error");
-      setToastMessage("Por favor, preencha o conteúdo do ofício.");
-      setTimeout(() => setToastMessage(""), 3000);
-      return;
-    }
+      if (!payload.destination_contact_id) {
+        setToastType("error");
+        setToastMessage("Por favor, selecione pelo menos um destinatário.");
+        setTimeout(() => setToastMessage(""), 3000);
+        return;
+      }
+      if (!payload.responsibles) {
+        setToastType("error");
+        setToastMessage("Por favor, selecione pelo menos um responsável.");
+        setTimeout(() => setToastMessage(""), 3000);
+        return;
+      }
+      if (!payload.subject) {
+        setToastType("error");
+        setToastMessage("Por favor, preencha o assunto.");
+        setTimeout(() => setToastMessage(""), 3000);
+        return;
+      }
+      if (!payload.content.trim()) {
+        setToastType("error");
+        setToastMessage("Por favor, preencha o conteúdo do ofício.");
+        setTimeout(() => setToastMessage(""), 3000);
+        return;
+      }
 
-    // if (!formData.department.trim()) {
-    //   setToastType("error");
-    //   setToastMessage("Por favor, selecione um contato do destinatário.");
-    //   setTimeout(() => setToastMessage(""), 3000);
-    //   return;
-    // }
+      if (!payload.department.trim()) {
+        setToastType("error");
+        setToastMessage("Por favor, selecione um contato do destinatário.");
+        setTimeout(() => setToastMessage(""), 3000);
+        return;
+      }
+
+      console.log(payload);
+      addOficio.mutate(payload);
+    });
 
     setToastType("success");
     setToastMessage("Ofício submetido à aprovação com sucesso!");
-
-    console.log(payload);
-    addOficio.mutate(payload);
     setTimeout(() => {
       setToastMessage("");
       // navigate("/oficios");
@@ -215,8 +218,8 @@ function CreateOficios() {
                 setIsDropdownOpen={setIsDropdownOpen}
                 selectedDestinatarios={selectedDestinatarios}
                 setSelectedDestinatarios={setSelectedDestinatarios}
-                selectedResponsibleIds={selectedResponsibleIds}
-                setSelectedResponsibleIds={setSelectedResponsibleIds}
+                selectedResponsibles={selectedResponsibles}
+                setSelectedResponsibles={setSelectedResponsibles}
                 expandedRecipientId={expandedRecipientId}
                 setExpandedRecipientId={setExpandedRecipientId}
                 contatos={contatos}
@@ -294,7 +297,7 @@ function CreateOficios() {
       <NovoOficioPreviewModal
         isOpen={isPreviewModalOpen}
         onClose={() => setIsPreviewModalOpen(false)}
-        selectedResponsibleIds={selectedResponsibleIds}
+        selectedResponsibleIds={selectedResponsibles}
         selectedDestinatarios={selectedDestinatarios}
         assunto={formData.subject}
         conteudo={content}

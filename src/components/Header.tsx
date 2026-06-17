@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Bell, Search, Menu, CheckCircle2, Info, FileText } from "lucide-react";
-import { useProfile } from "../hooks/queries/useUsers";
+import { Menu } from "lucide-react";
 
 export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const navigate = useNavigate();

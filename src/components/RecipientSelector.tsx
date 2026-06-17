@@ -9,6 +9,14 @@ import {
 } from "lucide-react";
 import { Input } from "./ui/Input";
 
+interface Responsible {
+  id: number;
+  name: string;
+  position: string;
+  department: string;
+  treatment: string;
+}
+
 interface RecipientSelectorProps {
   destinatarioSearch: string;
   setDestinatarioSearch: (search: string) => void;
@@ -16,8 +24,8 @@ interface RecipientSelectorProps {
   setIsDropdownOpen: (isOpen: boolean) => void;
   selectedDestinatarios: any[];
   setSelectedDestinatarios: React.Dispatch<React.SetStateAction<any[]>>;
-  selectedResponsibleIds: string[];
-  setSelectedResponsibleIds: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedResponsibles: any[];
+  setSelectedResponsibles: React.Dispatch<React.SetStateAction<any[]>>;
   expandedRecipientId: number | null;
   setExpandedRecipientId: (id: number | null) => void;
   contatos: any[];
@@ -30,8 +38,8 @@ export function RecipientSelector({
   setIsDropdownOpen,
   selectedDestinatarios,
   setSelectedDestinatarios,
-  selectedResponsibleIds,
-  setSelectedResponsibleIds,
+  selectedResponsibles,
+  setSelectedResponsibles,
   expandedRecipientId,
   setExpandedRecipientId,
   contatos,
@@ -39,8 +47,6 @@ export function RecipientSelector({
   const [responsibleSearch, setResponsibleSearch] = useState<
     Record<number, string>
   >({});
-
-  // const { data: contato = {}, isLoading } = useContato(destinatarioSearch.id);
 
   return (
     <div className="space-y-4 md:col-span-2">
@@ -92,9 +98,9 @@ export function RecipientSelector({
                       ) {
                         setSelectedDestinatarios((prev) => [...prev, dest]);
                         if (dest.responsibles && dest.responsibles.length > 0) {
-                          setSelectedResponsibleIds((prev) => [
+                          setSelectedResponsibles((prev) => [
                             ...prev,
-                            dest.responsibles[0].id.toString(),
+                            dest.responsibles[0],
                           ]);
                         }
                       }
@@ -154,7 +160,7 @@ export function RecipientSelector({
               type="button"
               onClick={() => {
                 setSelectedDestinatarios([]);
-                setSelectedResponsibleIds([]);
+                setSelectedResponsibles([]);
               }}
               className="text-xs font-medium text-rose-600 hover:text-rose-700 transition-colors"
             >
@@ -168,7 +174,7 @@ export function RecipientSelector({
                 const isExpanded = expandedRecipientId === dest.id;
                 const selectedCount =
                   dest.responsibles?.filter((r: any) =>
-                    selectedResponsibleIds.includes(`${dest.id}-${r.id}`),
+                    selectedResponsibles.includes(`${r}`),
                   ).length || 0;
 
                 return (
@@ -218,10 +224,8 @@ export function RecipientSelector({
                               prev.filter((d) => d.id !== dest.id),
                             );
                             const respIds =
-                              dest.responsibles?.map(
-                                (r: any) => `${dest.id}-${r.id}`,
-                              ) || [];
-                            setSelectedResponsibleIds((prev) =>
+                              dest.responsibles?.map((r: any) => `${r}`) || [];
+                            setSelectedResponsibles((prev) =>
                               prev.filter((id) => !respIds.includes(id)),
                             );
                           }}
@@ -245,24 +249,24 @@ export function RecipientSelector({
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const allRespIds = dest.responsibles.map(
-                                  (r: any) => `${dest.id}-${r.id}`,
-                                );
-                                const allSelected = allRespIds.every(
-                                  (id: string) =>
-                                    selectedResponsibleIds.includes(id),
+                                const allResponsibles = dest.responsibles;
+                                const allSelected = allResponsibles.every(
+                                  (resp: any) =>
+                                    selectedResponsibles.some(
+                                      (selected) => selected.id === resp.id,
+                                    ),
                                 );
 
                                 if (allSelected) {
-                                  setSelectedResponsibleIds((prev) =>
+                                  setSelectedResponsibles((prev) =>
                                     prev.filter(
-                                      (id) => !allRespIds.includes(id),
+                                      (id) => !allResponsibles.includes(id),
                                     ),
                                   );
                                 } else {
-                                  setSelectedResponsibleIds((prev) =>
+                                  setSelectedResponsibles((prev) =>
                                     Array.from(
-                                      new Set([...prev, ...allRespIds]),
+                                      new Set([...prev, ...allResponsibles]),
                                     ),
                                   );
                                 }
@@ -270,8 +274,8 @@ export function RecipientSelector({
                               className="text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
                             >
                               {dest.responsibles.every((r: any) =>
-                                selectedResponsibleIds.includes(
-                                  `${dest.id}-${r.id}`,
+                                selectedResponsibles.includes(
+                                  `${dest.id}-${r}`,
                                 ),
                               )
                                 ? "Desselecionar todos"
@@ -314,20 +318,21 @@ export function RecipientSelector({
                                 >
                                   <input
                                     type="checkbox"
-                                    checked={selectedResponsibleIds.includes(
-                                      `${dest.id}-${resp.id}`,
+                                    checked={selectedResponsibles.some(
+                                      (selected) => selected.id === resp.id,
                                     )}
                                     onChange={(e) => {
-                                      const compositeId = `${dest.id}-${resp.id}`;
+                                      const compositeId = `${resp.id}`;
                                       if (e.target.checked) {
-                                        setSelectedResponsibleIds((prev) => [
+                                        setSelectedResponsibles((prev) => [
                                           ...prev,
-                                          compositeId,
+                                          resp,
                                         ]);
                                       } else {
-                                        setSelectedResponsibleIds((prev) =>
+                                        setSelectedResponsibles((prev) =>
                                           prev.filter(
-                                            (id) => id !== compositeId,
+                                            (selected) =>
+                                              selected.id !== resp.id,
                                           ),
                                         );
                                       }
