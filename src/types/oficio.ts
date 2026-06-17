@@ -5,27 +5,7 @@ export interface RejectionInfo {
   type: string;
 }
 
-export type OficioType = 'interno' | 'recebido';
-
-export interface Oficio {
-  id: string; // System number
-  type?: OficioType;
-  subject: string;
-  department: string;
-  author: string;
-  date: string;
-  time: string;
-  status: string;
-  destinatarios: string[]; // For internal: who receives it. For external: maybe not used, but kept for compat
-  rejectionInfo?: RejectionInfo;
-  conteudo?: string;
-  // External oficio fields
-  externalNumber?: string;
-  sender?: string; // Quem mandou
-  description?: string;
-  fileData?: string; // Base64 of PDF
-  fileName?: string;
-}
+export type OficioType = "interno" | "recebido";
 
 export interface Destinatario {
   id: string;
@@ -33,4 +13,47 @@ export interface Destinatario {
   subArea: string;
   responsibleName: string;
   type: string;
+}
+
+export interface Oficios {
+  paginatedOficios: {
+    id: string | null;
+    author: {
+      id: number;
+      cpf: string;
+      email: string;
+      name: string;
+      is_active: boolean;
+      is_dev: boolean;
+      position_id: number;
+    };
+    author_id: number;
+    content: string;
+    department: string;
+    destination_contact: {
+      address_id: number;
+      doc: string;
+      id: number;
+      name: string;
+      type: string;
+    };
+    priority: string;
+    responsible: {
+      contact_id: number;
+      department: string;
+      email: string;
+      name: string;
+      position: string;
+      treatment: string;
+    }[];
+    status: string;
+    subject: string;
+    created_at: string;
+  }[];
+  activeMenuId: string | null;
+  setActiveMenuId: (id: string | null) => void;
+  setMenuPosition: (pos: { x: number; y: number }) => void;
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
+  totalPages: number;
 }

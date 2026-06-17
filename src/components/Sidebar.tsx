@@ -69,14 +69,17 @@ export default function Sidebar({
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-200 ease-in-out md:translate-x-0 flex flex-col h-screen ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200">
-          <div className="flex items-center">
+          <button
+            className="flex items-center cursor-pointer"
+            onClick={() => navigate("/oficios")}
+          >
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 mr-3">
               <FileText className="w-5 h-5" />
             </div>
             <span className="text-lg font-bold text-slate-900 tracking-tight">
               OfícioPro
             </span>
-          </div>
+          </button>
           {isOpen && (
             <button
               onClick={onClose}
