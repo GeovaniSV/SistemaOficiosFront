@@ -1,16 +1,16 @@
 import React, { SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, Info, Download, Edit2, FileCheck } from "lucide-react";
-import { Oficio } from "../types/oficio";
+import { OficioType } from "../types/oficio";
 
 interface OficiosContextMenuProps {
   activeMenuId: string | null;
   menuPosition: { x: number; y: number } | null;
   setActiveMenuId: (id: string | null) => void;
-  getOficioById: (id: string) => Oficio | undefined;
-  setPreviewOficio: (oficio: Oficio) => void;
-  setInfoOficio: (oficio: Oficio) => void;
-  setEvaluatingOficio: (oficio: Oficio) => void;
+  getOficioById: (id: string) => OficioType | undefined;
+  setPreviewOficio: (oficio: OficioType) => void;
+  setInfoOficio: (oficio: OficioType) => void;
+  setEvaluatingOficio: (oficio: OficioType) => void;
   setToastMessage: (msg: string) => void;
 }
 
@@ -95,11 +95,11 @@ export function OficiosContextMenu({
           {showEditar && (
             <button
               onClick={() => {
-                localStorage.setItem("editOficioId", activeOficio.id);
-                if (activeOficio.rejectionInfo) {
+                localStorage.setItem("editOficioId", activeOficio.id!);
+                if (activeOficio.rejection_infos) {
                   localStorage.setItem(
                     "editOficioRejectionInfo",
-                    JSON.stringify(activeOficio.rejectionInfo),
+                    JSON.stringify(activeOficio.rejection_infos),
                   );
                 } else {
                   localStorage.removeItem("editOficioRejectionInfo");
@@ -184,10 +184,10 @@ export function OficiosContextMenu({
             {showEditar && (
               <button
                 onClick={() => {
-                  if (activeOficio.rejectionInfo) {
+                  if (activeOficio.rejection_infos) {
                     localStorage.setItem(
                       "editOficioRejectionInfo",
-                      JSON.stringify(activeOficio.rejectionInfo),
+                      JSON.stringify(activeOficio.rejection_infos),
                     );
                   } else {
                     localStorage.removeItem("editOficioRejectionInfo");
