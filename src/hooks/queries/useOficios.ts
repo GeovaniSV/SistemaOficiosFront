@@ -1,6 +1,7 @@
 // src/hooks/queries/useOficios.ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../services/api";
+import { OficioType, PaginatedOficiosType } from "@/src/types/oficio";
 
 export function useOficios(page: number = 1) {
   return useQuery({
@@ -11,8 +12,8 @@ export function useOficios(page: number = 1) {
 }
 
 export function useOficio(id: number) {
-  return useQuery({
-    queryKey: ["oficio"],
+  return useQuery<OficioType>({
+    queryKey: ["oficio", id],
     queryFn: () =>
       api.get(`/api/oficios/${id}`).then((res) => res.data.data ?? res.data),
   });
@@ -23,7 +24,6 @@ export function useAddOficio() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (oficio: any) => {
-      console.log(oficio);
       return api.post("/api/oficios", oficio);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["oficios"] }),
@@ -43,8 +43,25 @@ export function useUpdateOficioStatus() {
 export function useUpdateOficio() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...oficio }: any) =>
+    mutationFn: ({ id, oficio }: { id: number; oficio: any }) =>
       api.put(`/api/oficios/${id}`, oficio),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["oficios"] }),
+  });
+}
+
+export function useReviwOficio() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: any }) =>
+      api.post(`/api/oficios/${id}/review`, payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["oficios"] }),
+  });
+}
+
+export function useSendOficio() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id }: { id: number }) => api.post(`/api/oficios/${id}/send`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["oficios"] }),
   });
 }

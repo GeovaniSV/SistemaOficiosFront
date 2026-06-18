@@ -142,7 +142,12 @@ function ContatosEditPage() {
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4">
         <div className="p-6 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="rounded-full">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
+              onClick={() => navigate("/contatos")}
+            >
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <h2 className="text-lg font-bold text-slate-900"></h2>

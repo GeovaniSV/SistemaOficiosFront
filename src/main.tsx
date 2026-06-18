@@ -18,6 +18,7 @@ import AppLayout from "./AppLayout.tsx";
 import CreateOficios from "./pages/Oficios/CreateOficios.tsx";
 import ListOficios from "./pages/Oficios/ListOficios.tsx";
 import MeuPerfil from "./pages/Users/ProfilePage.tsx";
+import EditOficios from "./pages/Oficios/EditOficios.tsx";
 
 const router = createBrowserRouter([
   { path: "*", element: <Navigate to="/login" /> },
@@ -34,7 +35,7 @@ const router = createBrowserRouter([
       //Oficios
       { path: "/oficios", element: <ListOficios /> },
       { path: "/oficios/criar", element: <CreateOficios /> },
-      { path: "/oficios/:id", element: <ListOficios /> },
+      { path: "/oficios/:id", element: <EditOficios /> },
 
       //Users
       { path: "/perfil", element: <MeuPerfil /> },
