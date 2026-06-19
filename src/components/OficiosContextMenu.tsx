@@ -2,6 +2,7 @@ import React, { SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, Info, Download, Edit2, FileCheck } from "lucide-react";
 import { OficioType } from "../types/oficio";
+import { useOficio } from "../hooks/queries/useOficios";
 
 interface OficiosContextMenuProps {
   activeMenuId: string | null;

@@ -113,14 +113,14 @@ function EditOficios() {
         setTimeout(() => setToastMessage(""), 3000);
         return;
       }
-      if (!payload.content.trim()) {
+      if (!payload.content) {
         setToastType("error");
         setToastMessage("Por favor, preencha o conteúdo do ofício.");
         setTimeout(() => setToastMessage(""), 3000);
         return;
       }
 
-      if (!payload.department.trim()) {
+      if (!payload.department) {
         setToastType("error");
         setToastMessage("Por favor, selecione um contato do destinatário.");
         setTimeout(() => setToastMessage(""), 3000);

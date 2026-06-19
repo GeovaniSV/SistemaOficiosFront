@@ -43,7 +43,7 @@ function ContatoCreatePage() {
   const handleSaveContact = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.name.trim()) {
+    if (!formData.name || !formData.name) {
       setToastMessage("O campo Nome Completo é obrigatório.");
       setTimeout(() => setToastMessage(""), 3000);
       return;
@@ -51,6 +51,24 @@ function ContatoCreatePage() {
 
     if (!formData.responsibles || formData.responsibles.length === 0) {
       setToastMessage("É necessário adicionar pelo menos um responsável.");
+      setTimeout(() => setToastMessage(""), 3000);
+      return;
+    }
+
+    if (!formData.address.bairro) {
+      setToastMessage("É necessário adicionar bairro.");
+      setTimeout(() => setToastMessage(""), 3000);
+      return;
+    }
+
+    if (!formData.address.cep) {
+      setToastMessage("É necessário adicionar CEP.");
+      setTimeout(() => setToastMessage(""), 3000);
+      return;
+    }
+
+    if (!formData.address.cidade) {
+      setToastMessage("É necessário adicionar cidade.");
       setTimeout(() => setToastMessage(""), 3000);
       return;
     }
@@ -99,11 +117,11 @@ function ContatoCreatePage() {
   const onSaveResponsibleModal = (responsible: any) => {
     if (
       !responsible.name ||
-      !responsible.name.trim() ||
+      !responsible.name ||
       !responsible.treatment ||
-      !responsible.treatment.trim() ||
+      !responsible.treatment ||
       !responsible.position ||
-      !responsible.position.trim()
+      !responsible.position
     ) {
       setToastMessage(
         "Os campos Nome, Tratamento e Cargo/Posição são obrigatórios.",

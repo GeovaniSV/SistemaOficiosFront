@@ -53,7 +53,7 @@ export default function Templates() {
   };
 
   const handleSaveTemplate = () => {
-    if (!formData.title.trim() || !formData.content.trim()) return;
+    if (!formData.title || !formData.content) return;
 
     if (formData.id === 0) {
       addTemplate(formData);

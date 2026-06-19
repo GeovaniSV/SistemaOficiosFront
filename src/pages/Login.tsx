@@ -3,8 +3,8 @@ import { useNavigate } from "react-router";
 import { ToastContainer, toast } from "react-toastify";
 import { api } from "../services/api";
 import { Mail, Lock, ArrowRight, FileText } from "lucide-react";
-import { Button } from "./ui/Button";
-import { Input } from "./ui/Input";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 
 export default function Login() {
   const [email, setEmail] = useState("");
