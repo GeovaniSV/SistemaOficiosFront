@@ -4,7 +4,7 @@ import { OficioType } from "../types/oficio";
 import { DocumentHeader, DocumentFooter } from "./DocumentTemplate";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
-import { useReviwOficio, useSendOficio } from "../hooks/queries/useOficios";
+import { useReviewOficio, useSendOficio } from "../hooks/queries/useOficios";
 import { toast } from "react-toastify";
 
 interface OficioEvaluationModalProps {
@@ -52,7 +52,7 @@ export function OficioEvaluationModal({
   const [authToken, setAuthToken] = useState("");
   const [sendViaEmail, setSendViaEmail] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
-  const reviewOficio = useReviwOficio();
+  const reviewOficio = useReviewOficio();
   const sendOficio = useSendOficio();
 
   // Reset state when modal opens

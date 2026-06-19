@@ -26,6 +26,8 @@ export function useOficioFilter(itemsPerPage: number = 10) {
   const { data: oficios = [], refetch } = useOficiosQuery();
   const updateStatusMutation = useUpdateOficioStatusMutation();
 
+  console.log(oficios);
+
   const [filters, setFilters] = useState<UseOficiosFilters>({
     generalSearch: "",
     statusFilter: "",
