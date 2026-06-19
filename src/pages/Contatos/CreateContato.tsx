@@ -17,10 +17,10 @@ import {
 import { Input } from "@/src/components/ui/Input";
 import { ContatoResponsibleModal } from "@/src/components/ContatoResponsibleModal";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 
 function ContatoCreatePage() {
   const navigate = useNavigate();
-  const [toastMessage, setToastMessage] = useState("");
   const [formData, setFormData] = useState<ContatoType>({
     id: 0,
     name: "",
@@ -43,43 +43,59 @@ function ContatoCreatePage() {
   const handleSaveContact = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!formData.doc) {
+      formData.type === "PF"
+        ? toast.error("Necessário preencher o campo CPF.")
+        : toast.error("Necessário preencher o campo CNPJ.");
+
+      return;
+    }
+
     if (!formData.name || !formData.name) {
-      setToastMessage("O campo Nome Completo é obrigatório.");
-      setTimeout(() => setToastMessage(""), 3000);
-      return;
-    }
-
-    if (!formData.responsibles || formData.responsibles.length === 0) {
-      setToastMessage("É necessário adicionar pelo menos um responsável.");
-      setTimeout(() => setToastMessage(""), 3000);
-      return;
-    }
-
-    if (!formData.address.bairro) {
-      setToastMessage("É necessário adicionar bairro.");
-      setTimeout(() => setToastMessage(""), 3000);
+      formData.type === "PF"
+        ? toast.error("Necessário preencher o campo Nome Completo.")
+        : toast.error("Necessário preencher o campo Razão Social.");
       return;
     }
 
     if (!formData.address.cep) {
-      setToastMessage("É necessário adicionar CEP.");
-      setTimeout(() => setToastMessage(""), 3000);
+      toast.error("Necessário preencher o campo CEP.");
+      return;
+    }
+
+    if (!formData.address.logradouro) {
+      toast.error("Necessário preencher o campo Logradouro.");
+      return;
+    }
+
+    if (!formData.address.numero) {
+      toast.error("Necessário preencher o campo Número.");
+      return;
+    }
+
+    if (!formData.address.bairro) {
+      toast.error("Necessário preencher o campo Bairro.");
       return;
     }
 
     if (!formData.address.cidade) {
-      setToastMessage("É necessário adicionar cidade.");
-      setTimeout(() => setToastMessage(""), 3000);
+      toast.error("Necessário preencher o campo Cidade.");
+      return;
+    }
+
+    if (!formData.address.estado) {
+      toast.error("Necessário preencher o campo Estado.");
+      return;
+    }
+
+    if (!formData.responsibles || formData.responsibles.length === 0) {
+      toast.error("Necessário adicionar pelo menos um responsável.");
       return;
     }
 
     addContato.mutate(formData);
-    setToastMessage("Contato criado com sucesso!");
+    toast.success("Contato criado com sucesso!");
     navigate("/contatos");
-
-    setTimeout(() => {
-      setToastMessage("");
-    }, 2000);
   };
 
   const [isResponsibleModalOpen, setIsResponsibleModalOpen] = useState(false);
@@ -123,10 +139,10 @@ function ContatoCreatePage() {
       !responsible.position ||
       !responsible.position
     ) {
-      setToastMessage(
+      toast.error(
         "Os campos Nome, Tratamento e Cargo/Posição são obrigatórios.",
       );
-      setTimeout(() => setToastMessage(""), 3000);
+
       return;
     }
 
@@ -143,8 +159,7 @@ function ContatoCreatePage() {
 
     setFormData({ ...formData, responsibles: newResponsibles });
     setIsResponsibleModalOpen(false);
-    setToastMessage("Responsável salvo com sucesso!");
-    setTimeout(() => setToastMessage(""), 3000);
+    toast.success("Responsável salvo com sucesso!");
   };
 
   return (
@@ -526,12 +541,7 @@ function ContatoCreatePage() {
         />
 
         {/* Toast Notification */}
-        {toastMessage && (
-          <div className="fixed bottom-4 right-4 z-50 flex items-center bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg animate-in slide-in-from-bottom-5">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 mr-3" />
-            <p className="text-sm font-medium">{toastMessage}</p>
-          </div>
-        )}
+        <ToastContainer />
       </div>
     </>
   );

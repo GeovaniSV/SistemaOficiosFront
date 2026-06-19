@@ -50,7 +50,7 @@ export function useUpdateOficio() {
   });
 }
 
-export function useReviwOficio() {
+export function useReviewOficio() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: any }) =>

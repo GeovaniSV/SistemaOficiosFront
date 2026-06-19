@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { User } from "lucide-react";
 import { Modal } from "./ui/Modal";
 import { OficioType, RejectionType } from "../types/oficio";

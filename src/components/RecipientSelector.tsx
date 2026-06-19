@@ -174,7 +174,9 @@ export function RecipientSelector({
                 const isExpanded = expandedRecipientId === dest.id;
                 const selectedCount =
                   dest.responsibles?.filter((r: any) =>
-                    selectedResponsibles.includes(`${r}`),
+                    selectedResponsibles.some(
+                      (selected) => selected.id === r.id,
+                    ),
                   ).length || 0;
 
                 return (

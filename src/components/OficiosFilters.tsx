@@ -29,7 +29,7 @@ export function OficiosFilters({
   setSelectedDestinatario,
 }: OficiosFiltersProps) {
   const navigate = useNavigate();
-  const { data: destinatarios = [] } = useContatos();
+
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mb-6">
       <div className="flex items-center mb-4 justify-between">

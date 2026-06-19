@@ -1,8 +1,12 @@
 import React, { SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, Info, Download, Edit2, FileCheck } from "lucide-react";
+import { Eye, Info, Download, Edit2, FileCheck, Mail } from "lucide-react";
 import { OficioType } from "../types/oficio";
-import { useOficio } from "../hooks/queries/useOficios";
+import {
+  useOficio,
+  useReviewOficio,
+  useSendOficio,
+} from "../hooks/queries/useOficios";
 
 interface OficiosContextMenuProps {
   activeMenuId: string | null;
@@ -26,6 +30,8 @@ export function OficiosContextMenu({
   setToastMessage,
 }: OficiosContextMenuProps) {
   const navigate = useNavigate();
+  const reviewOficio = useReviewOficio();
+  const sendOficio = useSendOficio();
   if (!activeMenuId || !menuPosition) return null;
 
   const activeOficio = getOficioById(activeMenuId);
@@ -35,8 +41,13 @@ export function OficiosContextMenu({
   const showEditar =
     activeOficio.status === "PENDING" || activeOficio.status === "DRAFT";
   const showAvaliar = activeOficio.status === "PENDING";
-  const showDownload = activeOficio.status === "APROVED";
+  const showDownload = activeOficio.status === "SENT";
   const showInformacoes = activeOficio.status === "REJECTED";
+  const showEnviar = activeOficio.status === "APPROVED";
+
+  const handleSendEmail = () => {
+    sendOficio.mutate({ id: Number(activeOficio.id) });
+  };
 
   return (
     <>
@@ -124,6 +135,19 @@ export function OficiosContextMenu({
             >
               <FileCheck className="w-4 h-4 mr-3" />
               Avaliar
+            </button>
+          )}
+
+          {showEnviar && (
+            <button
+              onClick={() => {
+                handleSendEmail();
+                setActiveMenuId(null);
+              }}
+              className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors w-full text-left"
+            >
+              <Mail className="w-4 h-4 mr-3" />
+              Enviar Email
             </button>
           )}
         </div>
