@@ -26,6 +26,16 @@ export function OficioPreviewModal({
 
   if (!oficio) return null;
 
+  const responsible = oficio.responsibles.find((r) => {
+    return r.contact_id === oficio.destination_contact_id;
+  });
+
+  const destinationContact = Array.isArray(oficio.destination_contact)
+    ? oficio.destination_contact.find((r) => {
+        return r.id === oficio.destination_contact_id;
+      })
+    : oficio.destination_contact;
+
   return (
     <Modal
       isOpen={isOpen}
@@ -118,11 +128,12 @@ export function OficioPreviewModal({
                 </div>
                 <div className="space-y-4 text-slate-700 text-justify leading-relaxed">
                   <p>
-                    A Sua Excelência o(a) Senhor(a)
+                    {responsible?.treatment}
                     <br />
                     <strong>
-                      {oficio.destination_contact?.[selectedDestinatarioIndex]
-                        ?.name || "Destinatário não informado"}
+                      {destinationContact?.type === "PJ"
+                        ? `${responsible?.name} (${destinationContact.name})`
+                        : ``}
                     </strong>
                   </p>
                   <p>Prezado(a) Senhor(a),</p>

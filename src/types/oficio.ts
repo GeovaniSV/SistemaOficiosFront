@@ -28,8 +28,10 @@ export interface OficioType {
     name: string;
     type: string;
   }[];
+  destination_contact_id: number;
   priority: string;
   responsibles: {
+    id: number;
     contact_id: number;
     department: string;
     email: string;
@@ -48,6 +50,7 @@ export interface OficioType {
 export interface PaginatedOficiosType {
   paginatedOficios: {
     id: string | null;
+    number: number;
     author: {
       id: number;
       cpf: string;
@@ -69,6 +72,7 @@ export interface PaginatedOficiosType {
     };
     priority: string;
     responsible: {
+      id: number;
       contact_id: number;
       department: string;
       email: string;

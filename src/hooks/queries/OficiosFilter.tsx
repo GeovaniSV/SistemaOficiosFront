@@ -14,6 +14,14 @@ export interface UseOficiosFilters {
   // origemFilter: string;
 }
 
+const hashStatus: Record<string, string> = {
+  APPROVED: "aprovado",
+  REJECTED: "rejeitado",
+  PENDING: "pendente",
+  DRAFT: "rascunho",
+  SENT: "enviado",
+};
+
 export function useOficioFilter(itemsPerPage: number = 10) {
   const { data: oficios = [], refetch } = useOficiosQuery();
   const updateStatusMutation = useUpdateOficioStatusMutation();
@@ -42,7 +50,9 @@ export function useOficioFilter(itemsPerPage: number = 10) {
 
       const matchesStatus =
         filters.statusFilter === "" ||
-        oficio.status?.toLowerCase() === filters.statusFilter.toLowerCase();
+        hashStatus[oficio.status] === filters.statusFilter.toLowerCase();
+
+      console.log(filters.statusFilter);
 
       const matchesAuthor =
         filters.authorFilter === "" ||

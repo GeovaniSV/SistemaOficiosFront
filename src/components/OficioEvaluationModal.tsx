@@ -19,6 +19,20 @@ interface OficioEvaluationModalProps {
   onReject: (id: string, reason: string, type: "devolver" | "rejeitar") => void;
 }
 
+export const PRIORITY_STYLES: Record<string, string> = {
+  HIGH: "bg-orange-50 text-orange-700 border-orange-200",
+  MEDIUM: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  LOW: "bg-slate-100 text-slate-700 border-slate-200",
+  URGENT: "bg-red-50 text-red-700 border-red-200",
+};
+
+const hashPriority: Record<string, string> = {
+  HIGH: "Alta",
+  MEDIUM: "Normal",
+  LOW: "Baixa",
+  URGENT: "Urgente",
+};
+
 export function OficioEvaluationModal({
   isOpen,
   onClose,
@@ -56,6 +70,16 @@ export function OficioEvaluationModal({
   }, [isOpen, oficio]);
 
   if (!isOpen || !oficio) return null;
+
+  const responsible = oficio.responsibles.find((r) => {
+    return r.contact_id === oficio.destination_contact_id;
+  });
+
+  const destination = Array.isArray(oficio.destination_contact)
+    ? oficio.destination_contact.find((d) => {
+        return d.id === oficio.destination_contact_id;
+      })
+    : oficio.destination_contact;
 
   const handleApprove = async () => {
     const payload = {
@@ -95,7 +119,6 @@ export function OficioEvaluationModal({
     reviewOficio.mutateAsync(payload);
     onClose();
   };
-
   return (
     <>
       {/* Evaluation Drawer Backdrop / Document Preview */}
@@ -130,17 +153,23 @@ export function OficioEvaluationModal({
                   {new Date(oficio.created_at).toLocaleDateString("pt-BR")}
                 </p>
               </div>
+
               <div className="col-span-2 sm:col-span-4">
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
                   Destinatários
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {destinationContact ? (
+                  {responsible ? (
                     <span
-                      key={destinationContact.id}
+                      key={responsible.id}
                       className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200"
                     >
-                      {destinationContact.name}
+                      {responsible.name}
+                      <br></br>({destination?.name})
+                    </span>
+                  ) : destination ? (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200">
+                      {destination.name}
                     </span>
                   ) : (
                     <span className="text-sm text-slate-500">
@@ -153,8 +182,10 @@ export function OficioEvaluationModal({
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">
                   Prioridade
                 </p>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                  Alta
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${PRIORITY_STYLES[oficio.priority]}`}
+                >
+                  {hashPriority[oficio.priority]}
                 </span>
               </div>
             </div>
