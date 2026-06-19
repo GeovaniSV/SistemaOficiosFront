@@ -1,10 +1,3 @@
-export interface RejectionInfo {
-  reason: string;
-  date: string;
-  author: string;
-  type: string;
-}
-
 export interface Destinatario {
   id: string;
   name: string;
@@ -47,7 +40,9 @@ export interface OficioType {
   status: string;
   subject: string;
   created_at: string;
-  rejection_infos: [];
+  rejection_infos?: {
+    REJECTED?: RejectionType[];
+  };
 }
 
 export interface PaginatedOficiosType {
@@ -91,4 +86,21 @@ export interface PaginatedOficiosType {
   currentPage: number;
   setCurrentPage: (page: number) => void;
   totalPages: number;
+}
+
+export interface RejectionType {
+  author: {
+    id: number;
+    name: string;
+    email: string;
+    cpf: string;
+    position_id: number;
+  };
+  author_id: number;
+  created_at: string;
+  id: number;
+  oficio_id: number;
+  reason: string;
+  type: string;
+  updated_at: string;
 }

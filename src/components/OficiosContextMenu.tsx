@@ -2,6 +2,7 @@ import React, { SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, Info, Download, Edit2, FileCheck } from "lucide-react";
 import { OficioType } from "../types/oficio";
+import { useOficio } from "../hooks/queries/useOficios";
 
 interface OficiosContextMenuProps {
   activeMenuId: string | null;
@@ -46,7 +47,7 @@ export function OficiosContextMenu({
 
       {/* Desktop Context Menu */}
       <div
-        className="hidden sm:block fixed z-50 bg-white rounded-xl shadow-xl border border-slate-200 py-2 min-w-[180px] overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+        className="hidden sm:block fixed z-50 bg-white rounded-xl shadow-xl border border-slate-200 py-2 min-w-45 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
         style={{
           top: Math.min(menuPosition.y, window.innerHeight - 150),
           left: Math.min(menuPosition.x, window.innerWidth - 200),

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { ShieldCheck, QrCode } from "lucide-react";
 import { Modal } from "./ui/Modal";
 import { OficioType } from "../types/oficio";
-import { formatOficioNumber } from "../utils/formatters";
 import { DocumentHeader, DocumentFooter } from "./DocumentTemplate";
 
 interface OficioPreviewModalProps {
@@ -107,9 +106,7 @@ export function OficioPreviewModal({
               {/* Content */}
               <div className="flex-1">
                 <div className="text-right mb-8">
-                  <p className="text-slate-700 font-medium">
-                    {formatOficioNumber(oficio.id!)}
-                  </p>
+                  <p className="text-slate-700 font-medium">{oficio.number}</p>
                   <p className="text-slate-500">
                     {new Date(oficio.created_at).toLocaleDateString("pt-BR")}
                   </p>
@@ -173,7 +170,7 @@ export function OficioPreviewModal({
                       <div>
                         <p className="text-slate-500">Identificação</p>
                         <p className="font-medium text-slate-900">
-                          {formatOficioNumber(oficio.id!)}
+                          {oficio.number}
                         </p>
                       </div>
                       <div>

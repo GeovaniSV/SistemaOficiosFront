@@ -80,14 +80,14 @@ function CreateOficios() {
         setTimeout(() => setToastMessage(""), 3000);
         return;
       }
-      if (!payload.content.trim()) {
+      if (!payload.content) {
         setToastType("error");
         setToastMessage("Por favor, preencha o conteúdo do ofício.");
         setTimeout(() => setToastMessage(""), 3000);
         return;
       }
 
-      if (!payload.department.trim()) {
+      if (!payload.department) {
         setToastType("error");
         setToastMessage("Por favor, selecione um contato do destinatário.");
         setTimeout(() => setToastMessage(""), 3000);
@@ -138,13 +138,7 @@ function CreateOficios() {
             >
               Cancelar
             </Button>
-            <Button
-              variant="outline"
-              icon={<Save className="w-4 h-4" />}
-              onClick={() => handleSubmit("false")}
-            >
-              Salvar
-            </Button>
+
             <Button
               onClick={() => handleSubmit("true")}
               icon={<Send className="w-4 h-4" />}

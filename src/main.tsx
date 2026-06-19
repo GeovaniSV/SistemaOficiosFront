@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 
-import Login from "./components/Login.tsx";
+import Login from "./pages/Login.tsx";
 import Oficios from "./components/Oficios.tsx";
 import ListContatos from "./pages/Contatos/ListContatos.tsx";
 import EditContato from "./pages/Contatos/EditContato.tsx";
