@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { User } from "lucide-react";
 import { Modal } from "./ui/Modal";
 import { OficioType, RejectionType } from "../types/oficio";
 import { useOficio } from "../hooks/queries/useOficios";
+import { Button } from "./ui/Button";
+import { useNavigate } from "react-router-dom";
 
 interface OficioInfoModalProps {
   isOpen: boolean;
@@ -15,11 +17,18 @@ export function OficioInfoModal({
   onClose,
   oficio,
 }: OficioInfoModalProps) {
+  const navigate = useNavigate();
+  const { data: oficioSecond, isLoading } = useOficio(Number(oficio?.id), {
+    enabled: !!oficio?.id,
+  });
   if (!oficio || oficio.status !== "REJECTED") return null;
 
-  const { data: oficioSecond, isLoading } = useOficio(Number(oficio.id));
+  console.log(oficio.id);
 
-  console.log("Data: ", oficioSecond);
+  // const handleEdit = () => {
+  //   onClose();
+  //   navigate(`/oficios/${oficio.id}`);
+  // };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Informações da Rejeição">
@@ -32,11 +41,15 @@ export function OficioInfoModal({
             {oficio.id} - {oficio.subject}
           </p>
         </div>
-        {oficioSecond &&
-          oficioSecond.rejection_infos!.REJECTED!.map(
+        {isLoading ? (
+          <>
+            <div>Carregando...</div>
+          </>
+        ) : (
+          oficioSecond!.rejection_infos!.REJECTED!.map(
             (rejection: RejectionType) => (
-              <>
-                <div className="grid grid-cols-2 gap-4">
+              <React.Fragment key={rejection.id}>
+                <div className="grid grid-cols-2 gap-4" key={rejection.id}>
                   <div>
                     <h4 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">
                       Rejeitado por
@@ -68,10 +81,15 @@ export function OficioInfoModal({
                     {rejection.reason}
                   </div>
                 </div>
-              </>
+              </React.Fragment>
             ),
-          )}
-        <div className="pt-2">
+          )
+        )}
+        <div className="pt-2 flex gap-5">
+          {/* <Button className="w-full" onClick={handleEdit}>
+            Editar
+          </Button> */}
+
           <button
             onClick={onClose}
             className="w-full px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl font-medium transition-colors"

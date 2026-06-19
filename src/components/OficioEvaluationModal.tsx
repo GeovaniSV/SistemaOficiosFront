@@ -55,8 +55,6 @@ export function OficioEvaluationModal({
     }
   }, [isOpen, oficio]);
 
-  console.log(destinationContact);
-
   if (!isOpen || !oficio) return null;
 
   const handleApprove = async () => {
@@ -97,8 +95,6 @@ export function OficioEvaluationModal({
     reviewOficio.mutateAsync(payload);
     onClose();
   };
-
-  console.log(oficio);
 
   return (
     <>

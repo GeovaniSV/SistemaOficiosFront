@@ -11,11 +11,12 @@ export function useOficios(page: number = 1) {
   });
 }
 
-export function useOficio(id: number) {
+export function useOficio(id: number, p0?: { enabled: boolean }) {
   return useQuery<OficioType>({
     queryKey: ["oficio", id],
     queryFn: () =>
       api.get(`/api/oficios/${id}`).then((res) => res.data.data ?? res.data),
+    enabled: p0?.enabled ?? (!!id && !isNaN(id)),
   });
 }
 

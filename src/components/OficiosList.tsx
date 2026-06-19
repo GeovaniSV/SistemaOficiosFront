@@ -24,7 +24,6 @@ export function OficiosList({
   setCurrentPage,
   totalPages,
 }: PaginatedOficiosType) {
-  console.log(paginatedOficios);
   return (
     <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
       <div className="overflow-x-auto">
