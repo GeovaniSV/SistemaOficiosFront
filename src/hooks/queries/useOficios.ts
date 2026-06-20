@@ -6,8 +6,7 @@ import { OficioType, PaginatedOficiosType } from "@/src/types/oficio";
 export function useOficios(page: number = 1) {
   return useQuery({
     queryKey: ["oficios", page],
-    queryFn: () =>
-      api.get(`/api/oficios?page=${page}`).then((res) => res.data.data),
+    queryFn: () => api.get(`/api/oficios?page=${page}`).then((res) => res.data),
   });
 }
 
