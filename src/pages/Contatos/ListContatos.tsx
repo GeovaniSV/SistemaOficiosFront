@@ -38,6 +38,8 @@ function ContatosListPage() {
     currentPage * itemsPerPage,
   );
 
+  console.log("Contatos: ", contatos);
+
   // Reset page when searching
   useEffect(() => {
     setCurrentPage(1);
@@ -131,10 +133,10 @@ function ContatosListPage() {
                   <td className="px-6 py-4">
                     <Badge
                       variant={
-                        contato.active !== false ? "success" : "secondary"
+                        contato.is_active !== false ? "success" : "secondary"
                       }
                     >
-                      {contato.active !== false ? "Ativo" : "Inativo"}
+                      {contato.is_active !== false ? "Ativo" : "Inativo"}
                     </Badge>
                   </td>
                 </tr>

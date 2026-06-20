@@ -19,5 +19,5 @@ export type ContatoType = {
     department: string;
     treatment?: string;
   }[];
-  active: boolean;
+  is_active: boolean;
 };
