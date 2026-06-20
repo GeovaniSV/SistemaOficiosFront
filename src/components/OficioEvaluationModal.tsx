@@ -4,7 +4,8 @@ import { OficioType } from "../types/oficio";
 import { DocumentHeader, DocumentFooter } from "./DocumentTemplate";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
-import { useReviwOficio, useSendOficio } from "../hooks/queries/useOficios";
+import { useReviewOficio, useSendOficio } from "../hooks/queries/useOficios";
+import { toast } from "react-toastify";
 
 interface OficioEvaluationModalProps {
   isOpen: boolean;
@@ -17,6 +18,20 @@ interface OficioEvaluationModalProps {
   ) => void;
   onReject: (id: string, reason: string, type: "devolver" | "rejeitar") => void;
 }
+
+export const PRIORITY_STYLES: Record<string, string> = {
+  HIGH: "bg-orange-50 text-orange-700 border-orange-200",
+  MEDIUM: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  LOW: "bg-slate-100 text-slate-700 border-slate-200",
+  URGENT: "bg-red-50 text-red-700 border-red-200",
+};
+
+const hashPriority: Record<string, string> = {
+  HIGH: "Alta",
+  MEDIUM: "Normal",
+  LOW: "Baixa",
+  URGENT: "Urgente",
+};
 
 export function OficioEvaluationModal({
   isOpen,
@@ -31,12 +46,13 @@ export function OficioEvaluationModal({
   const [rejectType, setRejectType] = useState<"devolver" | "rejeitar">(
     "devolver",
   );
+  const [destinationContact, setDestinationContact] = useState<any>();
   const [authStep, setAuthStep] = useState<"password" | "token">("password");
   const [authPassword, setAuthPassword] = useState("");
   const [authToken, setAuthToken] = useState("");
   const [sendViaEmail, setSendViaEmail] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
-  const reviewOficio = useReviwOficio();
+  const reviewOficio = useReviewOficio();
   const sendOficio = useSendOficio();
 
   // Reset state when modal opens
@@ -49,10 +65,21 @@ export function OficioEvaluationModal({
       setAuthToken("");
       setSendViaEmail(false);
       setRejectionReason("");
+      setDestinationContact(oficio?.destination_contact);
     }
   }, [isOpen, oficio]);
 
   if (!isOpen || !oficio) return null;
+
+  const responsible = oficio.responsibles.find((r) => {
+    return r.contact_id === oficio.destination_contact_id;
+  });
+
+  const destination = Array.isArray(oficio.destination_contact)
+    ? oficio.destination_contact.find((d) => {
+        return d.id === oficio.destination_contact_id;
+      })
+    : oficio.destination_contact;
 
   const handleApprove = async () => {
     const payload = {
@@ -74,12 +101,24 @@ export function OficioEvaluationModal({
   };
 
   const handleReject = () => {
-    if (!rejectionReason.trim()) return;
-    onReject(oficio.id!, rejectionReason, rejectType);
+    if (!rejectionReason) {
+      toast.error("Falha no login. Verifique suas credenciais.");
+      return;
+    }
+    const payload = {
+      id: Number(oficio.id),
+      payload: {
+        status: "REJECTED",
+        subject: oficio.subject,
+        priority: oficio.priority,
+        content: oficio.content,
+        department: oficio.department,
+        reason: rejectionReason,
+      },
+    };
+    reviewOficio.mutateAsync(payload);
+    onClose();
   };
-
-  console.log(oficio);
-
   return (
     <>
       {/* Evaluation Drawer Backdrop / Document Preview */}
@@ -108,26 +147,30 @@ export function OficioEvaluationModal({
               </div>
               <div>
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">
-                  Data e Hora
+                  Data
                 </p>
                 <p className="text-sm font-medium text-slate-900">
-                  {new Date(oficio.created_at).toLocaleTimeString("pt-BR")}
+                  {new Date(oficio.created_at).toLocaleDateString("pt-BR")}
                 </p>
               </div>
+
               <div className="col-span-2 sm:col-span-4">
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
                   Destinatários
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {oficio.destination_contact?.length > 0 ? (
-                    oficio.destination_contact.map((dest) => (
-                      <span
-                        key={dest.id}
-                        className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200"
-                      >
-                        {dest.name}
-                      </span>
-                    ))
+                  {responsible ? (
+                    <span
+                      key={responsible.id}
+                      className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200"
+                    >
+                      {responsible.name}
+                      <br></br>({destination?.name})
+                    </span>
+                  ) : destination ? (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200">
+                      {destination.name}
+                    </span>
                   ) : (
                     <span className="text-sm text-slate-500">
                       Nenhum destinatário
@@ -139,8 +182,10 @@ export function OficioEvaluationModal({
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">
                   Prioridade
                 </p>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                  Alta
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${PRIORITY_STYLES[oficio.priority]}`}
+                >
+                  {hashPriority[oficio.priority]}
                 </span>
               </div>
             </div>
@@ -249,10 +294,7 @@ export function OficioEvaluationModal({
                     <h4 className="text-sm font-medium text-emerald-900 mb-1">
                       Assinatura Digital
                     </h4>
-                    <p className="text-sm text-emerald-700">
-                      Ao aprovar, você assinará este documento digitalmente
-                      utilizando seu certificado em nuvem.
-                    </p>
+                    <p className="text-sm text-emerald-700"></p>
                   </div>
                 </div>
               </div>
@@ -322,19 +364,6 @@ export function OficioEvaluationModal({
                     Devolver para Ajustes
                   </span>
                 </label>
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="rejectType"
-                    value="rejeitar"
-                    checked={rejectType === "rejeitar"}
-                    onChange={() => setRejectType("rejeitar")}
-                    className="w-4 h-4 text-red-600 border-slate-300 focus:ring-red-500"
-                  />
-                  <span className="ml-2 text-sm font-medium text-slate-700">
-                    Rejeitar Definitivamente
-                  </span>
-                </label>
               </div>
 
               <div
@@ -344,7 +373,7 @@ export function OficioEvaluationModal({
                   className={`text-sm ${rejectType === "devolver" ? "text-amber-800" : "text-red-800"}`}
                 >
                   {rejectType === "devolver"
-                    ? "O ofício será devolvido ao autor para que ele faça os ajustes necessários. A justificativa será enviada como notificação."
+                    ? "O ofício será devolvido ao autor para que ele faça os ajustes necessários."
                     : "O ofício será rejeitado definitivamente e não poderá ser editado. A justificativa ficará registrada no histórico."}
                 </p>
               </div>
@@ -382,7 +411,7 @@ export function OficioEvaluationModal({
               <Button
                 onClick={handleReject}
                 className={`flex-1 ${rejectType === "devolver" ? "bg-amber-600 hover:bg-amber-700" : "bg-red-600 hover:bg-red-700"}`}
-                disabled={!rejectionReason.trim()}
+                disabled={!rejectionReason}
               >
                 {rejectType === "devolver"
                   ? "Devolver Ofício"

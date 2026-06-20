@@ -10,6 +10,7 @@ import { Select } from "@/src/components/ui/Select";
 import { OficioEditor } from "@/src/components/OficioEditor";
 import { NovoOficioPreviewModal } from "@/src/components/NovoOficioPreviewModal";
 import { NovoOficioTemplateModal } from "@/src/components/NovoOficioTemplateModal";
+import { toast, ToastContainer } from "react-toastify";
 
 const PriorityHash: Record<string, string> = {
   normal: "MEDIUM",
@@ -43,8 +44,6 @@ function CreateOficios() {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [templateSearch, setTemplateSearch] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error">("success");
 
   const { data: contatos = [], isLoading } = useContatos();
 
@@ -309,20 +308,7 @@ function CreateOficios() {
       />
 
       {/* Toast Notification */}
-      {toastMessage && (
-        <div
-          className={`fixed bottom-4 right-4 z-50 flex items-center text-white px-4 py-3 rounded-xl shadow-lg animate-in slide-in-from-bottom-5 ${
-            toastType === "success" ? "bg-slate-900" : "bg-rose-600"
-          }`}
-        >
-          {toastType === "success" ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 mr-3" />
-          ) : (
-            <Info className="w-5 h-5 text-white mr-3" />
-          )}
-          <p className="text-sm font-medium">{toastMessage}</p>
-        </div>
-      )}
+      <ToastContainer />
     </main>
   );
 }

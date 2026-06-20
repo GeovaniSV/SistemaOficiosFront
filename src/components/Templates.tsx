@@ -56,8 +56,8 @@ export default function Templates() {
     setActiveMenuId(null);
   };
 
-  const handleSaveTemplate = async () => {
-    if (!formData.title.trim() || !formData.content.trim()) return;
+  const handleSaveTemplate = () => {
+    if (!formData.title || !formData.content) return;
 
     try {
       if (formData.id === 0) {

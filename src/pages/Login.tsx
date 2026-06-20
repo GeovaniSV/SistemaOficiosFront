@@ -3,8 +3,8 @@ import { useNavigate } from "react-router";
 import { ToastContainer, toast } from "react-toastify";
 import { api } from "../services/api";
 import { Mail, Lock, ArrowRight, FileText } from "lucide-react";
-import { Button } from "./ui/Button";
-import { Input } from "./ui/Input";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -115,7 +115,7 @@ export default function Login() {
           alt="Office background"
         />
         <div className="absolute inset-0 bg-emerald-900/20 mix-blend-multiply" />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
       </div>
     </div>
   );

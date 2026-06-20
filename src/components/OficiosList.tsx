@@ -24,7 +24,6 @@ export function OficiosList({
   setCurrentPage,
   totalPages,
 }: PaginatedOficiosType) {
-  console.log(paginatedOficios);
   return (
     <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
       <div className="overflow-x-auto">
@@ -49,7 +48,7 @@ export function OficiosList({
           </thead>
           <tbody className="divide-y divide-slate-200">
             {paginatedOficios.length > 0 ? (
-              paginatedOficios.map((oficio: any) => (
+              paginatedOficios.map((oficio) => (
                 <tr
                   key={oficio.id}
                   onClick={(e) => {
@@ -59,7 +58,7 @@ export function OficiosList({
                     );
                     setMenuPosition({ x: e.clientX, y: e.clientY });
                   }}
-                  className={`hover:bg-slate-50 transition-colors cursor-pointer group ${activeMenuId === oficio.id ? "bg-slate-50" : ""}`}
+                  className={` transition-colors cursor-pointer group ${activeMenuId === oficio.id ? "bg-slate-50" : ""} ${oficio.status === "APPROVED" ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100" : "hover:bg-slate-50"}`}
                 >
                   <td className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap items-center">
                     <div className="flex items-center  justify-center ">
