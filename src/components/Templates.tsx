@@ -56,7 +56,7 @@ export default function Templates() {
     setActiveMenuId(null);
   };
 
-  const handleSaveTemplate = () => {
+  const handleSaveTemplate = async () => {
     if (!formData.title || !formData.content) return;
 
     try {
@@ -88,7 +88,7 @@ export default function Templates() {
     setTimeout(() => setToastMessage(""), 3000);
   };
 
-  const filteredTemplates = templates.filter((t) =>
+  const filteredTemplates = templates.filter((t: any) =>
     t.title.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
@@ -187,7 +187,7 @@ export default function Templates() {
                         </tr>
                       )}
                       {!isLoading && !isError && paginatedTemplates.length > 0
-                        ? paginatedTemplates.map((template) => (
+                        ? paginatedTemplates.map((template: any) => (
                             <tr
                               key={template.id}
                               onClick={(e) => {
@@ -276,7 +276,7 @@ export default function Templates() {
                   <button
                     onClick={() =>
                       handleEditTemplate(
-                        templates.find((t) => t.id === activeMenuId),
+                        templates.find((t: any) => t.id === activeMenuId),
                       )
                     }
                     className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center"
@@ -443,7 +443,9 @@ export default function Templates() {
                   </Button>
                   <Button
                     type="submit"
-                    isLoading={addTemplate.isPending || updateTemplate.isPending}
+                    isLoading={
+                      addTemplate.isPending || updateTemplate.isPending
+                    }
                   >
                     Salvar Template
                   </Button>

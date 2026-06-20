@@ -13,7 +13,7 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     setData({
       name: user.name,
-      position: user.position_id,
+      position: user.positionId,
     });
   }, []);
 

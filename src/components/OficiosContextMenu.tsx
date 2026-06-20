@@ -17,6 +17,8 @@ interface OficiosContextMenuProps {
   setInfoOficio: (oficio: OficioType) => void;
   setEvaluatingOficio: (oficio: OficioType) => void;
   setToastMessage: (msg: string) => void;
+  setIsDownloadModalOpen: (value: boolean) => void;
+  setDownloadOficio: (oficio: OficioType) => void;
 }
 
 export function OficiosContextMenu({
@@ -28,6 +30,8 @@ export function OficiosContextMenu({
   setInfoOficio,
   setEvaluatingOficio,
   setToastMessage,
+  setIsDownloadModalOpen,
+  setDownloadOficio,
 }: OficiosContextMenuProps) {
   const navigate = useNavigate();
   const reviewOficio = useReviewOficio();
@@ -92,9 +96,9 @@ export function OficiosContextMenu({
           {showDownload && (
             <button
               onClick={() => {
-                setToastMessage(
-                  `Download do PDF iniciado para o ofício ${activeOficio.id}`,
-                );
+                setDownloadOficio(activeOficio);
+                setIsDownloadModalOpen(true);
+
                 setTimeout(() => setToastMessage(""), 3000);
                 setActiveMenuId(null);
               }}

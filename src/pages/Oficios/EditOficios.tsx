@@ -75,7 +75,7 @@ function EditOficios() {
 
     setSelectedDestinatarios([oficio.destination_contact]);
     setSelectedResponsibles(oficio.responsibles);
-    setRejectionInfo(oficio.rejection_infos);
+    setRejectionInfo(oficio.rejection_infos?.REJECTED);
     if (rejectionInfo) {
       setHasRejection(true);
     }
