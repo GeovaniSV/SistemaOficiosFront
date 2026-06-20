@@ -55,7 +55,7 @@ function ContatosEditPage() {
   const handleSaveContact = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.name.trim()) {
+    if (!formData.name || !formData.name) {
       setToastMessage("O campo Nome Completo é obrigatório.");
       setTimeout(() => setToastMessage(""), 3000);
       return;
@@ -107,11 +107,11 @@ function ContatosEditPage() {
   const onSaveResponsibleModal = (responsible: any) => {
     if (
       !responsible.name ||
-      !responsible.name.trim() ||
+      !responsible.name ||
       !responsible.treatment ||
-      !responsible.treatment.trim() ||
+      !responsible.treatment ||
       !responsible.position ||
-      !responsible.position.trim()
+      !responsible.position
     ) {
       setToastMessage(
         "Os campos Nome, Tratamento e Cargo/Posição são obrigatórios.",

@@ -187,7 +187,7 @@ export default function Configuracoes() {
   const handleAddCity = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const newCity = cityInput.trim();
+      const newCity = cityInput;
       if (newCity && !orgData.cidadesSubsecao.includes(newCity)) {
         setOrgData({
           ...orgData,

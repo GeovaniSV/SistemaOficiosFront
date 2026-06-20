@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { ShieldCheck, QrCode } from "lucide-react";
 import { Modal } from "./ui/Modal";
 import { OficioType } from "../types/oficio";
-import { formatOficioNumber } from "../utils/formatters";
 import { DocumentHeader, DocumentFooter } from "./DocumentTemplate";
 
 interface OficioPreviewModalProps {
@@ -26,6 +25,16 @@ export function OficioPreviewModal({
   }, [isOpen, oficio]);
 
   if (!oficio) return null;
+
+  const responsible = oficio.responsibles.find((r) => {
+    return r.contact_id === oficio.destination_contact_id;
+  });
+
+  const destinationContact = Array.isArray(oficio.destination_contact)
+    ? oficio.destination_contact.find((r) => {
+        return r.id === oficio.destination_contact_id;
+      })
+    : oficio.destination_contact;
 
   return (
     <Modal
@@ -107,9 +116,7 @@ export function OficioPreviewModal({
               {/* Content */}
               <div className="flex-1">
                 <div className="text-right mb-8">
-                  <p className="text-slate-700 font-medium">
-                    {formatOficioNumber(oficio.id!)}
-                  </p>
+                  <p className="text-slate-700 font-medium">{oficio.number}</p>
                   <p className="text-slate-500">
                     {new Date(oficio.created_at).toLocaleDateString("pt-BR")}
                   </p>
@@ -121,11 +128,12 @@ export function OficioPreviewModal({
                 </div>
                 <div className="space-y-4 text-slate-700 text-justify leading-relaxed">
                   <p>
-                    A Sua Excelência o(a) Senhor(a)
+                    {responsible?.treatment}
                     <br />
                     <strong>
-                      {oficio.destination_contact?.[selectedDestinatarioIndex]
-                        ?.name || "Destinatário não informado"}
+                      {destinationContact?.type === "PJ"
+                        ? `${responsible?.name} (${destinationContact.name})`
+                        : ``}
                     </strong>
                   </p>
                   <p>Prezado(a) Senhor(a),</p>
@@ -173,7 +181,7 @@ export function OficioPreviewModal({
                       <div>
                         <p className="text-slate-500">Identificação</p>
                         <p className="font-medium text-slate-900">
-                          {formatOficioNumber(oficio.id!)}
+                          {oficio.number}
                         </p>
                       </div>
                       <div>

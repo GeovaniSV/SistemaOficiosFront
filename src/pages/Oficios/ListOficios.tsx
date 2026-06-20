@@ -118,7 +118,7 @@ export function ListOficios() {
       />
 
       <OficioInfoModal
-        isOpen={!!infoOficio}
+        isOpen={infoOficio ? true : false}
         onClose={() => setInfoOficio(null)}
         oficio={infoOficio}
       />

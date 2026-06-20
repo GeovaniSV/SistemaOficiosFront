@@ -10,6 +10,7 @@ import { Select } from "@/src/components/ui/Select";
 import { OficioEditor } from "@/src/components/OficioEditor";
 import { NovoOficioPreviewModal } from "@/src/components/NovoOficioPreviewModal";
 import { NovoOficioTemplateModal } from "@/src/components/NovoOficioTemplateModal";
+import { toast, ToastContainer } from "react-toastify";
 
 const PriorityHash: Record<string, string> = {
   normal: "MEDIUM",
@@ -43,66 +44,58 @@ function CreateOficios() {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [templateSearch, setTemplateSearch] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error">("success");
 
   const { data: contatos = [], isLoading } = useContatos();
 
-  const handleSubmit = (status: string) => {
-    selectedResponsibles.map((res) => {
-      res.id;
-      res.departament;
-      const payload = {
-        ...formData,
-        content: content,
-        responsibles: [res.id],
-        destination_contact_id: selectedDestinatarios[0]?.id,
-        priority: PriorityHash[formData.priority],
-        department: res.department,
-        submit: status,
-      };
+  const handleSubmit = async (status: string) => {
+    if (!formData.subject) {
+      toast.error("Necessário preencher o campo assunto.");
+      return;
+    }
+    if (selectedDestinatarios.length === 0) {
+      toast.error("Selecione pelo menos um destinatário.");
+      return;
+    }
+    if (selectedResponsibles.length === 0) {
+      toast.error("Selecione pelo menos um responsável.");
+      return;
+    }
+    if (!content) {
+      toast.error("Necessário preencher o conteúdo do ofício.");
+      return;
+    }
 
-      if (!payload.destination_contact_id) {
-        setToastType("error");
-        setToastMessage("Por favor, selecione pelo menos um destinatário.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
-      if (!payload.responsibles) {
-        setToastType("error");
-        setToastMessage("Por favor, selecione pelo menos um responsável.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
-      if (!payload.subject) {
-        setToastType("error");
-        setToastMessage("Por favor, preencha o assunto.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
-      if (!payload.content.trim()) {
-        setToastType("error");
-        setToastMessage("Por favor, preencha o conteúdo do ofício.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
+    try {
+      const promises = selectedResponsibles.map((resp) => {
+        const dest = selectedDestinatarios.find((d) =>
+          d.responsibles?.some((r: any) => r.id === resp.id),
+        );
 
-      if (!payload.department.trim()) {
-        setToastType("error");
-        setToastMessage("Por favor, selecione um contato do destinatário.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
+        const payload = {
+          ...formData,
+          content: content,
+          responsibles: [resp.id],
+          destination_contact_id: dest?.id,
+          priority: PriorityHash[formData.priority],
+          department: resp.department,
+          submit: status,
+        };
 
-      addOficio.mutate(payload);
-    });
+        return addOficio.mutateAsync(payload);
+      });
 
-    setToastType("success");
-    setToastMessage("Ofício submetido à aprovação com sucesso!");
-    setTimeout(() => {
-      setToastMessage("");
+      await Promise.all(promises);
+
+      toast.success(
+        selectedResponsibles.length > 1
+          ? `${selectedResponsibles.length} ofícios submetidos à aprovação com sucesso!`
+          : "Ofício submetido à aprovação com sucesso!",
+      );
+
       navigate("/oficios");
-    }, 2000);
+    } catch (error) {
+      toast.error("Erro ao submeter um ou mais ofícios.");
+    }
   };
 
   return (
@@ -138,13 +131,7 @@ function CreateOficios() {
             >
               Cancelar
             </Button>
-            <Button
-              variant="outline"
-              icon={<Save className="w-4 h-4" />}
-              onClick={() => handleSubmit("false")}
-            >
-              Salvar
-            </Button>
+
             <Button
               onClick={() => handleSubmit("true")}
               icon={<Send className="w-4 h-4" />}
@@ -307,20 +294,7 @@ function CreateOficios() {
       />
 
       {/* Toast Notification */}
-      {toastMessage && (
-        <div
-          className={`fixed bottom-4 right-4 z-50 flex items-center text-white px-4 py-3 rounded-xl shadow-lg animate-in slide-in-from-bottom-5 ${
-            toastType === "success" ? "bg-slate-900" : "bg-rose-600"
-          }`}
-        >
-          {toastType === "success" ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 mr-3" />
-          ) : (
-            <Info className="w-5 h-5 text-white mr-3" />
-          )}
-          <p className="text-sm font-medium">{toastMessage}</p>
-        </div>
-      )}
+      <ToastContainer />
     </main>
   );
 }
