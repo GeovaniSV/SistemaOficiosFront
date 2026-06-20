@@ -14,9 +14,8 @@ export function useOficioSettings() {
   return useQuery({
     queryKey: ["oficio-settings"],
     queryFn: () =>
-      api
-        .get("/api/settings")
-        .then((res) => res.data.data ?? res.data),
+      api.get("/api/settings").then((res) => res.data.data ?? res.data),
+    retry: false,
   });
 }
 

@@ -11,6 +11,7 @@ import { OficioEditor } from "@/src/components/OficioEditor";
 import { NovoOficioPreviewModal } from "@/src/components/NovoOficioPreviewModal";
 import { NovoOficioTemplateModal } from "@/src/components/NovoOficioTemplateModal";
 import { toast, ToastContainer } from "react-toastify";
+import { AxiosError } from "axios";
 
 const PriorityHash: Record<string, string> = {
   normal: "MEDIUM",
@@ -48,44 +49,56 @@ function CreateOficios() {
   const { data: contatos = [], isLoading } = useContatos();
 
   const handleSubmit = (status: string) => {
-    const destinationContactId = selectedDestinatarios[0]?.id;
+    try {
+      const destinationContactId = selectedDestinatarios[0]?.id;
 
-    if (!destinationContactId) {
-      toast.error("Por favor, selecione pelo menos um destinatário.");
-      return;
-    }
-    if (selectedResponsibles.length === 0) {
-      toast.error("Por favor, selecione pelo menos um responsável.");
-      return;
-    }
-    if (!formData.subject) {
-      toast.error("Por favor, preencha o assunto.");
-      return;
-    }
-    if (!content.trim()) {
-      toast.error("Por favor, preencha o conteúdo do ofício.");
-      return;
-    }
+      if (!destinationContactId) {
+        toast.error("Por favor, selecione pelo menos um destinatário.");
+        return;
+      }
+      if (selectedResponsibles.length === 0) {
+        toast.error("Por favor, selecione pelo menos um responsável.");
+        return;
+      }
+      if (!formData.subject) {
+        toast.error("Por favor, preencha o assunto.");
+        return;
+      }
+      if (!content.trim()) {
+        toast.error("Por favor, preencha o conteúdo do ofício.");
+        return;
+      }
 
-    const payload = {
-      ...formData,
-      content: content,
-      responsibles: selectedResponsibles.map((res) => res.id),
-      destination_contact_id: destinationContactId,
-      priority: PriorityHash[formData.priority],
-      department: selectedResponsibles[0]?.department ?? null,
-      submit: status,
-    };
+      const payload = {
+        ...formData,
+        content: content,
+        responsibles: selectedResponsibles.map((res) => res.id),
+        destination_contact_id: destinationContactId,
+        priority: PriorityHash[formData.priority],
+        department: selectedResponsibles[0]?.department ?? null,
+        submit: status,
+      };
 
-    addOficio.mutate(payload, {
-      onSuccess: () => {
-        toast.success("Ofício submetido à aprovação com sucesso!");
-        setTimeout(() => navigate("/oficios"), 2000);
-      },
-      onError: () => {
-        toast.error("Erro ao salvar o ofício. Tente novamente.");
-      },
-    });
+      addOficio.mutate(payload, {
+        onSuccess: () => {
+          toast.success("Ofício submetido à aprovação com sucesso!");
+          setTimeout(() => navigate("/oficios"), 2000);
+        },
+        onError: () => {
+          toast.error("Erro ao salvar o ofício. Tente novamente.");
+        },
+      });
+    } catch (error) {
+      if (error) {
+        if (error instanceof AxiosError) {
+          const errorHash: Record<number, string> = {
+            403: "Você não tem permissão para realizar essa ação",
+          };
+          const status = error.response?.status;
+          toast.error(errorHash[status!]);
+        }
+      }
+    }
   };
 
   return (

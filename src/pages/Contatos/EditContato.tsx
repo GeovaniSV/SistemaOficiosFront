@@ -66,8 +66,6 @@ function ContatosEditPage() {
         return;
       }
 
-      console.log(formData);
-
       updateContato.mutate(formData);
       toast.success("Contato salvo com sucesso!");
 

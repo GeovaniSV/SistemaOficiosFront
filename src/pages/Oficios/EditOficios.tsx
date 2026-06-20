@@ -10,6 +10,8 @@ import { Select } from "@/src/components/ui/Select";
 import { OficioEditor } from "@/src/components/OficioEditor";
 import { NovoOficioPreviewModal } from "@/src/components/NovoOficioPreviewModal";
 import { NovoOficioTemplateModal } from "@/src/components/NovoOficioTemplateModal";
+import { toast, ToastContainer } from "react-toastify";
+import { AxiosError, isAxiosError } from "axios";
 
 const PriorityHash: Record<string, string> = {
   normal: "MEDIUM",
@@ -84,61 +86,66 @@ function EditOficios() {
   if (oficioLoading || !oficio) return <div>Carregando...</div>;
 
   const handleSubmit = (submit: boolean) => {
-    selectedResponsibles.map((res: any) => {
-      const payload = {
-        ...formData,
-        content: content,
-        responsibles: [res.id],
-        destination_contact_id: selectedDestinatarios[0]?.id,
-        priority: PriorityHash[formData.priority],
-        department: res.department,
-        submit: submit,
-      };
+    selectedResponsibles.map(async (res: any) => {
+      try {
+        const payload = {
+          ...formData,
+          content: content,
+          responsibles: [res.id],
+          destination_contact_id: selectedDestinatarios[0]?.id,
+          priority: PriorityHash[formData.priority],
+          department: res.department,
+          submit: submit,
+        };
 
-      if (!payload.destination_contact_id) {
-        setToastType("error");
-        setToastMessage("Por favor, selecione pelo menos um destinatário.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
-      if (!payload.responsibles) {
-        setToastType("error");
-        setToastMessage("Por favor, selecione pelo menos um responsável.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
-      if (!payload.subject) {
-        setToastType("error");
-        setToastMessage("Por favor, preencha o assunto.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
-      if (!payload.content) {
-        setToastType("error");
-        setToastMessage("Por favor, preencha o conteúdo do ofício.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
+        if (!payload.destination_contact_id) {
+          toast.error("Por favor, selecione pelo menos um destinatário.");
+          return;
+        }
+        if (!payload.responsibles) {
+          toast.error("Por favor, selecione pelo menos um responsável.");
+          return;
+        }
+        if (!payload.subject) {
+          toast.error("Por favor, preencha o assunto.");
+          return;
+        }
+        if (!payload.content) {
+          toast.error("Por favor, preencha o conteúdo do ofício.");
+          return;
+        }
 
-      if (!payload.department) {
-        setToastType("error");
-        setToastMessage("Por favor, selecione um contato do destinatário.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
+        if (!payload.department) {
+          toast.error("Por favor, selecione um contato do destinatário.");
+          return;
+        }
 
-      updateOficio.mutate({ id: Number(oficioParamId), oficio: payload });
-      setToastType("success");
-      setToastMessage("Ofício submetido à aprovação com sucesso!");
-      setTimeout(() => {
-        setToastMessage("");
-        navigate("/oficios");
-      }, 2000);
+        const response = await updateOficio.mutateAsync({
+          id: Number(oficioParamId),
+          oficio: payload,
+        });
+
+        toast.success("Ofício submetido à aprovação com sucesso!");
+        setTimeout(() => {
+          navigate("/oficios");
+        }, 2000);
+      } catch (error) {
+        if (error) {
+          if (error instanceof AxiosError) {
+            const errorHash: Record<number, string> = {
+              403: "Você não tem permissão para realizar essa ação",
+            };
+            const status = error.response?.status;
+            toast.error(errorHash[status!]);
+          }
+        }
+      }
     });
   };
 
   return (
     <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
+      <ToastContainer />
       <div className="max-w-4xl mx-auto">
         {/* Header Section */}
         <div className="flex items-center justify-between mb-8">

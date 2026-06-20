@@ -23,8 +23,6 @@ export function OficioInfoModal({
   });
   if (!oficio || oficio.status !== "REJECTED") return null;
 
-  console.log(oficio.id);
-
   // const handleEdit = () => {
   //   onClose();
   //   navigate(`/oficios/${oficio.id}`);

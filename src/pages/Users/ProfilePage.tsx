@@ -13,6 +13,7 @@ import {
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { useProfile } from "@/src/hooks/queries/useUsers";
+import { useRoles } from "@/src/hooks/queries/useRoles";
 
 export default function MeuPerfil() {
   const navigate = useNavigate();
@@ -73,13 +74,18 @@ export default function MeuPerfil() {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    setProfileData({
-      name: user.name,
-      cargo: user.position_id,
-      email: user.email,
-      role: "",
-      photoUrl: "https://picsum.photos/seed/user/100/100",
-    });
+    const position = user.position?.name ? user.position.name : "Sem cargo";
+    const roles = user.roles.length > 0 ? user.roles[0].name : "Sem papel";
+
+    if (user) {
+      setProfileData({
+        name: user.name,
+        cargo: position,
+        email: user.email,
+        role: roles,
+        photoUrl: "https://picsum.photos/seed/user/100/100",
+      });
+    }
   }, []);
 
   return (
@@ -98,9 +104,9 @@ export default function MeuPerfil() {
                 <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
                   Meu Perfil
                 </h1>
-                <p className="text-sm text-slate-500 mt-1">
+                {/* <p className="text-sm text-slate-500 mt-1">
                   Gerencie suas informações pessoais e configurações de conta.
-                </p>
+                </p> */}
               </div>
             </div>
 
@@ -112,32 +118,32 @@ export default function MeuPerfil() {
                     <h2 className="text-lg font-semibold text-slate-900">
                       Informações da Conta
                     </h2>
-                    <p className="text-sm text-slate-500 mt-1">
+                    {/* <p className="text-sm text-slate-500 mt-1">
                       Atualize seus dados básicos.
-                    </p>
+                    </p> */}
                   </div>
                   <form onSubmit={handleSaveProfile} className="p-6 space-y-6">
                     <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
                       <div className="relative group">
-                        <img
+                        {/* <img
                           src={profileData.photoUrl}
                           alt="Profile"
                           className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-sm"
-                        />
-                        <button
+                        /> */}
+                        {/* <button
                           type="button"
                           onClick={handlePhotoClick}
                           className="absolute bottom-0 right-0 p-2 bg-emerald-600 text-white rounded-full shadow-md hover:bg-emerald-700 transition-colors"
                         >
                           <Camera className="w-4 h-4" />
-                        </button>
-                        <input
+                        </button> */}
+                        {/* <input
                           type="file"
                           ref={fileInputRef}
                           onChange={handlePhotoChange}
                           accept="image/*"
                           className="hidden"
-                        />
+                        /> */}
                       </div>
                       <div className="flex-1 space-y-4 w-full">
                         <div>
@@ -146,6 +152,7 @@ export default function MeuPerfil() {
                           </label>
                           <Input
                             type="text"
+                            disabled
                             icon={<User className="w-4 h-4 text-slate-400" />}
                             value={profileData.name}
                             onChange={(e) =>
@@ -162,6 +169,7 @@ export default function MeuPerfil() {
                           </label>
                           <Input
                             type="email"
+                            disabled
                             icon={<Mail className="w-4 h-4 text-slate-400" />}
                             value={profileData.email}
                             onChange={(e) =>
@@ -174,17 +182,17 @@ export default function MeuPerfil() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                    {/* <div className="flex justify-end pt-4 border-t border-slate-100">
                       <Button type="submit">
                         <Save className="w-4 h-4 mr-2" />
                         Salvar Alterações
                       </Button>
-                    </div>
+                    </div> */}
                   </form>
                 </div>
 
                 {/* Password Change Card */}
-                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                {/* <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
                   <div className="p-6 border-b border-slate-200">
                     <h2 className="text-lg font-semibold text-slate-900">
                       Segurança
@@ -259,6 +267,7 @@ export default function MeuPerfil() {
                     </div>
                   </form>
                 </div>
+                */}
               </div>
 
               {/* Sidebar Info */}

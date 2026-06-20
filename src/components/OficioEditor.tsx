@@ -22,6 +22,10 @@ export function OficioEditor({
           htmlFor="conteudo"
         >
           Conteúdo do Ofício <span className="text-rose-500">*</span>
+          <br></br>
+          <span className="font-thin text-[10px]">
+            Não é possível utilizar variáveis dentro do oficio
+          </span>
         </label>
         <div className="flex items-center space-x-2">
           <button
@@ -49,7 +53,7 @@ export function OficioEditor({
       </div>
       <div className="border border-slate-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-colors">
         {/* Simple Toolbar Placeholder */}
-        <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 flex items-center space-x-2">
+        {/* <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 flex items-center space-x-2">
           <button className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 rounded transition-colors font-bold">
             B
           </button>
@@ -66,7 +70,7 @@ export function OficioEditor({
           <button className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 rounded transition-colors text-sm">
             H2
           </button>
-        </div>
+        </div> */}
         <textarea
           id="conteudo"
           rows={12}

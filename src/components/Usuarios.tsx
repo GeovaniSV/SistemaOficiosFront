@@ -11,6 +11,7 @@ import {
   Lock,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
@@ -29,12 +30,7 @@ import { useCargos } from "../hooks/queries/useCargos";
 import { useRoles } from "../hooks/queries/useRoles";
 
 export default function Usuarios() {
-  const {
-    data: usuarios = [],
-    isLoading,
-    isError,
-    error,
-  } = useUsuarios();
+  const { data: usuarios = [], isLoading, isError, error } = useUsuarios();
   const { data: cargos = [] } = useCargos();
   const { data: roles = [] } = useRoles();
   const addUsuario = useAddUsuario();
@@ -44,6 +40,7 @@ export default function Usuarios() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
+  const [inError, setInError] = useState("");
 
   const [view, setView] = useState<"list" | "form">("list");
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
@@ -58,7 +55,7 @@ export default function Usuarios() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const filteredUsers = usuarios.filter((user) => {
+  const filteredUsers = usuarios.filter((user: any) => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -95,7 +92,7 @@ export default function Usuarios() {
   };
 
   const handleEditUser = () => {
-    const user = usuarios.find((u) => u.id === activeMenuId);
+    const user = usuarios.find((u: any) => u.id === activeMenuId);
     if (user) {
       setFormData({ ...user, password: "" });
       setIsExistingUser(true);
@@ -131,6 +128,7 @@ export default function Usuarios() {
           }
           setInitialStatus(formData.status);
         }
+        setView("list");
       } else {
         const response = await addUsuario.mutateAsync({
           name: formData.name,
@@ -149,6 +147,7 @@ export default function Usuarios() {
         setInitialStatus("Ativo");
       }
 
+      setView("list");
       setToastMessage("Usuário salvo com sucesso!");
     } catch (error: any) {
       const errors = error?.response?.data?.errors;
@@ -231,7 +230,7 @@ export default function Usuarios() {
                     <tbody className="divide-y divide-slate-200">
                       {!isLoading &&
                         !isError &&
-                        paginatedUsers.map((user) => (
+                        paginatedUsers.map((user: any) => (
                           <tr
                             key={user.id}
                             onClick={(e) => {
@@ -296,9 +295,12 @@ export default function Usuarios() {
                             colSpan={5}
                             className="px-6 py-8 text-center text-rose-500"
                           >
-                            {(error as any)?.response?.status === 403
-                              ? "Você não tem permissão para visualizar os usuários."
-                              : "Erro ao carregar usuários da API."}
+                            <p className="inline-flex items-center gap-2">
+                              <AlertTriangle size={18} />
+                              {(error as any)?.response?.status === 403
+                                ? "Você não tem permissão para visualizar os usuários."
+                                : "Erro ao carregar papéis da API."}
+                            </p>
                           </td>
                         </tr>
                       )}
@@ -485,7 +487,7 @@ export default function Usuarios() {
                       }
                     >
                       <option value="">Nenhum</option>
-                      {roles.map((role) => (
+                      {roles.map((role: any) => (
                         <option key={role.id} value={role.name}>
                           {role.name}
                         </option>
@@ -506,7 +508,7 @@ export default function Usuarios() {
                       }
                     >
                       <option value="">Nenhum</option>
-                      {cargos.map((cargo) => (
+                      {cargos.map((cargo: any) => (
                         <option key={cargo.id} value={cargo.id}>
                           {cargo.name}
                         </option>
@@ -567,7 +569,7 @@ export default function Usuarios() {
             <div className="px-4 pb-6">
               {(() => {
                 const activeUser = usuarios.find(
-                  (u) => u.id === Number(activeMenuId),
+                  (u: any) => u.id === Number(activeMenuId),
                 );
                 if (!activeUser) return null;
 

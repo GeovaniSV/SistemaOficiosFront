@@ -46,7 +46,7 @@ export default function Cargos() {
   const itemsPerPage = 10;
 
   const filteredCargos = cargos.filter(
-    (cargo) =>
+    (cargo: any) =>
       cargo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cargo.description.toLowerCase().includes(searchTerm.toLowerCase()),
   );
@@ -70,7 +70,7 @@ export default function Cargos() {
   };
 
   const handleEditCargo = () => {
-    const cargo = cargos.find((c) => c.id === activeMenuId);
+    const cargo = cargos.find((c: any) => c.id === activeMenuId);
     if (cargo) {
       setFormData({ ...cargo });
       setIsExistingCargo(true);
@@ -90,12 +90,14 @@ export default function Cargos() {
           description: formData.description,
           is_active: formData.status !== "inativo",
         });
+        setView("list");
       } else {
         const response = await addCargo.mutateAsync({
           name: formData.name,
           description: formData.description,
           is_active: formData.status !== "inativo",
         });
+        setView("list");
         setFormData({ ...formData, id: response.data.id });
         setIsExistingCargo(true);
       }
@@ -181,7 +183,7 @@ export default function Cargos() {
                     <tbody className="divide-y divide-slate-200">
                       {!isLoading &&
                         !isError &&
-                        paginatedCargos.map((cargo) => (
+                        paginatedCargos.map((cargo: any) => (
                           <tr
                             key={cargo.id}
                             onClick={(e) => {
@@ -241,16 +243,18 @@ export default function Cargos() {
                           </td>
                         </tr>
                       )}
-                      {!isLoading && !isError && filteredCargos.length === 0 && (
-                        <tr>
-                          <td
-                            colSpan={3}
-                            className="px-6 py-8 text-center text-slate-500"
-                          >
-                            Nenhum cargo encontrado com os filtros atuais.
-                          </td>
-                        </tr>
-                      )}
+                      {!isLoading &&
+                        !isError &&
+                        filteredCargos.length === 0 && (
+                          <tr>
+                            <td
+                              colSpan={3}
+                              className="px-6 py-8 text-center text-slate-500"
+                            >
+                              Nenhum cargo encontrado com os filtros atuais.
+                            </td>
+                          </tr>
+                        )}
                     </tbody>
                   </table>
                 </div>
@@ -441,7 +445,9 @@ export default function Cargos() {
             <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-4" />
             <div className="px-4 pb-6">
               {(() => {
-                const activeCargo = cargos.find((c) => c.id === activeMenuId);
+                const activeCargo = cargos.find(
+                  (c: any) => c.id === activeMenuId,
+                );
                 if (!activeCargo) return null;
 
                 return (
