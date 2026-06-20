@@ -10,6 +10,11 @@ import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 
 import Login from "./pages/Login.tsx";
+import Oficios from "./components/Oficios.tsx";
+import Usuarios from "./components/Usuarios.tsx";
+import Templates from "./components/Templates.tsx";
+import Cargos from "./components/Cargos.tsx";
+import Configuracoes from "./components/Configuracoes.tsx";
 import ListContatos from "./pages/Contatos/ListContatos.tsx";
 import EditContato from "./pages/Contatos/EditContato.tsx";
 import CreateContato from "./pages/Contatos/CreateContato.tsx";
@@ -23,6 +28,13 @@ const router = createBrowserRouter([
   { path: "*", element: <Navigate to="/login" /> },
   { path: "/login", element: <Login /> },
   // { path: "/oficios", element: <Oficios /> },
+  // Usuarios, Templates, Cargos e Configuracoes renderizam seu próprio
+  // Sidebar/Header, por isso ficam fora do AppLayout (que já provê esse
+  // wrapper via Outlet).
+  { path: "/usuarios", element: <Usuarios /> },
+  { path: "/templates", element: <Templates /> },
+  { path: "/cargos", element: <Cargos /> },
+  { path: "/configuracoes", element: <Configuracoes /> },
   {
     element: <AppLayout />,
     children: [

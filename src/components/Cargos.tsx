@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Save,
   Edit,
+  Trash2,
   CheckCircle2,
   XCircle,
   ChevronLeft,
@@ -15,10 +16,19 @@ import Sidebar from "./Sidebar";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { Badge } from "./ui/Badge";
-import { useAppStore } from "../store/useAppStore";
+import { CargoDeleteModal } from "./CargoDeleteModal";
+import {
+  useCargos,
+  useAddCargo,
+  useUpdateCargo,
+  useDeleteCargo,
+} from "../hooks/queries/useCargos";
 
 export default function Cargos() {
-  const { cargos, addCargo, updateCargo } = useAppStore();
+  const { data: cargos = [], isLoading, isError } = useCargos();
+  const addCargo = useAddCargo();
+  const updateCargo = useUpdateCargo();
+  const deleteCargo = useDeleteCargo();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -32,6 +42,7 @@ export default function Cargos() {
   const [isExistingCargo, setIsExistingCargo] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const itemsPerPage = 10;
 
   const filteredCargos = cargos.filter(
@@ -68,20 +79,51 @@ export default function Cargos() {
     }
   };
 
-  const handleSaveCargo = (e: React.FormEvent) => {
+  const handleSaveCargo = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isExistingCargo) {
-      updateCargo(formData.id, formData);
-    } else {
-      const newCargo = { ...formData };
-      addCargo(newCargo);
-      const createdCargo = { ...newCargo, id: Date.now() };
-      setFormData(createdCargo);
-      setIsExistingCargo(true);
-    }
+    try {
+      if (isExistingCargo) {
+        await updateCargo.mutateAsync({
+          id: formData.id,
+          name: formData.name,
+          description: formData.description,
+          is_active: formData.status !== "inativo",
+        });
+      } else {
+        const response = await addCargo.mutateAsync({
+          name: formData.name,
+          description: formData.description,
+          is_active: formData.status !== "inativo",
+        });
+        setFormData({ ...formData, id: response.data.id });
+        setIsExistingCargo(true);
+      }
 
-    setToastMessage("Cargo salvo com sucesso!");
+      setToastMessage("Cargo salvo com sucesso!");
+    } catch (error: any) {
+      const errors = error?.response?.data?.errors;
+      const firstError = errors && Object.values(errors)[0];
+      const message =
+        (Array.isArray(firstError) ? firstError[0] : firstError) ||
+        error?.response?.data?.message ||
+        "Erro ao salvar cargo.";
+      setToastMessage(message);
+    }
+    setTimeout(() => setToastMessage(""), 3000);
+  };
+
+  const handleDeleteCargo = async () => {
+    if (!activeMenuId) return;
+    try {
+      await deleteCargo.mutateAsync(activeMenuId);
+      setToastMessage("Cargo excluído com sucesso!");
+    } catch (error: any) {
+      setToastMessage(
+        error?.response?.data?.message || "Erro ao excluir cargo.",
+      );
+    }
+    setActiveMenuId(null);
     setTimeout(() => setToastMessage(""), 3000);
   };
 
@@ -137,47 +179,69 @@ export default function Cargos() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
-                      {paginatedCargos.map((cargo) => (
-                        <tr
-                          key={cargo.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveMenuId(
-                              activeMenuId === cargo.id ? null : cargo.id,
-                            );
-                            setMenuPosition({ x: e.clientX, y: e.clientY });
-                          }}
-                          className={`hover:bg-slate-50 transition-colors cursor-pointer group ${activeMenuId === cargo.id ? "bg-slate-50" : ""}`}
-                        >
-                          <td className="px-6 py-4">
-                            <div className="flex flex-col">
-                              <span className="font-medium text-slate-900">
-                                {cargo.name}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-slate-600">
-                            {cargo.description}
-                          </td>
-                          <td className="px-6 py-4">
-                            <Badge
-                              variant={
-                                cargo.status === "ativo"
-                                  ? "success"
-                                  : "secondary"
-                              }
-                            >
-                              {cargo.status === "ativo" ? (
-                                <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                              ) : (
-                                <XCircle className="w-3.5 h-3.5 mr-1" />
-                              )}
-                              {cargo.status === "ativo" ? "Ativo" : "Inativo"}
-                            </Badge>
+                      {!isLoading &&
+                        !isError &&
+                        paginatedCargos.map((cargo) => (
+                          <tr
+                            key={cargo.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveMenuId(
+                                activeMenuId === cargo.id ? null : cargo.id,
+                              );
+                              setMenuPosition({ x: e.clientX, y: e.clientY });
+                            }}
+                            className={`hover:bg-slate-50 transition-colors cursor-pointer group ${activeMenuId === cargo.id ? "bg-slate-50" : ""}`}
+                          >
+                            <td className="px-6 py-4">
+                              <div className="flex flex-col">
+                                <span className="font-medium text-slate-900">
+                                  {cargo.name}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-slate-600">
+                              {cargo.description}
+                            </td>
+                            <td className="px-6 py-4">
+                              <Badge
+                                variant={
+                                  cargo.status === "ativo"
+                                    ? "success"
+                                    : "secondary"
+                                }
+                              >
+                                {cargo.status === "ativo" ? (
+                                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                                ) : (
+                                  <XCircle className="w-3.5 h-3.5 mr-1" />
+                                )}
+                                {cargo.status === "ativo" ? "Ativo" : "Inativo"}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      {isLoading && (
+                        <tr>
+                          <td
+                            colSpan={3}
+                            className="px-6 py-8 text-center text-slate-500"
+                          >
+                            Carregando cargos...
                           </td>
                         </tr>
-                      ))}
-                      {filteredCargos.length === 0 && (
+                      )}
+                      {isError && (
+                        <tr>
+                          <td
+                            colSpan={3}
+                            className="px-6 py-8 text-center text-rose-500"
+                          >
+                            Erro ao carregar cargos da API.
+                          </td>
+                        </tr>
+                      )}
+                      {!isLoading && !isError && filteredCargos.length === 0 && (
                         <tr>
                           <td
                             colSpan={3}
@@ -324,7 +388,10 @@ export default function Cargos() {
                 </div>
 
                 <div className="flex justify-end pt-4 border-t border-slate-200">
-                  <Button type="submit">
+                  <Button
+                    type="submit"
+                    isLoading={addCargo.isPending || updateCargo.isPending}
+                  >
                     <Save className="w-4 h-4 mr-2" />
                     Salvar Cargo
                   </Button>
@@ -359,6 +426,13 @@ export default function Cargos() {
                 <Edit className="w-4 h-4 mr-3" />
                 Editar Cargo
               </button>
+              <button
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-rose-50 hover:text-rose-600 transition-colors w-full text-left"
+              >
+                <Trash2 className="w-4 h-4 mr-3" />
+                Excluir Cargo
+              </button>
             </div>
           </div>
 
@@ -388,6 +462,13 @@ export default function Cargos() {
                       <Edit className="w-5 h-5 mr-3 text-slate-400" />
                       Editar Cargo
                     </button>
+                    <button
+                      onClick={() => setIsDeleteModalOpen(true)}
+                      className="flex items-center px-4 py-3 text-sm font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors w-full text-left"
+                    >
+                      <Trash2 className="w-5 h-5 mr-3 text-rose-500" />
+                      Excluir Cargo
+                    </button>
                   </div>
                 );
               })()}
@@ -395,6 +476,12 @@ export default function Cargos() {
           </div>
         </>
       )}
+
+      <CargoDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteCargo}
+      />
 
       {/* Toast Notification */}
       {toastMessage && (

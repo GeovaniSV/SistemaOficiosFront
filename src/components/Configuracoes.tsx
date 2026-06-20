@@ -14,13 +14,34 @@ import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
-import { Select } from "./ui/Select";
 import { Textarea } from "./ui/Textarea";
-import { useAppStore } from "../store/useAppStore";
+import {
+  useSmtpConfig,
+  useUpdateSmtpConfig,
+} from "../hooks/queries/useSmtpConfig";
+import {
+  useOficioSettings,
+  useUpdateOficioSettings,
+} from "../hooks/queries/useOficioSettings";
+import { useUsuarios } from "../hooks/queries/useUsers";
+import { useCargos } from "../hooks/queries/useCargos";
+
+type SignerCandidate = {
+  type: "user" | "position";
+  signer_id: number;
+  name: string;
+  cargo?: string | null;
+};
 
 export default function Configuracoes() {
   const navigate = useNavigate();
-  const { usuarios } = useAppStore();
+  const { data: usuariosList = [] } = useUsuarios();
+  const { data: cargosList = [] } = useCargos();
+  const { data: smtpConfig, isLoading: isLoadingSmtp } = useSmtpConfig();
+  const updateSmtpConfig = useUpdateSmtpConfig();
+  const { data: oficioSettings, isLoading: isLoadingOficioSettings } =
+    useOficioSettings();
+  const updateOficioSettings = useUpdateOficioSettings();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [activeTab, setActiveTab] = useState("organizacao");
@@ -57,15 +78,20 @@ export default function Configuracoes() {
   const [oficiosData, setOficiosData] = useState({
     formatoNumeracao:
       localStorage.getItem("formatoNumeracao") || "SEQUENCIAL/ANO",
-    regraAssinatura: "UM_USUARIO",
-    assinantes: [] as any[],
-    cabecalho:
-      localStorage.getItem("oficioCabecalho") ||
-      "Ordem dos Advogados do Brasil\nSeccional Mato Grosso\n6ª Subseção - Sinop",
-    rodape:
-      localStorage.getItem("oficioRodape") ||
-      "OAB Mato Grosso 6ª subseção - Sinop",
+    assinantes: [] as SignerCandidate[],
+    cabecalho: "",
+    rodape: "",
   });
+
+  useEffect(() => {
+    if (!oficioSettings) return;
+    setOficiosData((prev) => ({
+      ...prev,
+      cabecalho: oficioSettings.header ?? "",
+      rodape: oficioSettings.footer ?? "",
+      assinantes: oficioSettings.authorized_signers ?? [],
+    }));
+  }, [oficioSettings]);
 
   const [emailData, setEmailData] = useState({
     servidorSmtp: "",
@@ -78,11 +104,80 @@ export default function Configuracoes() {
     usarSsl: true,
   });
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!smtpConfig) return;
+    setEmailData({
+      servidorSmtp: smtpConfig.host ?? "",
+      porta: smtpConfig.port ? String(smtpConfig.port) : "587",
+      usuario: smtpConfig.username ?? "",
+      senha: "",
+      senhaConfigurada: smtpConfig.has_password ?? false,
+      remetenteNome: smtpConfig.from_name ?? "",
+      remetenteEmail: smtpConfig.from_email ?? "",
+      usarSsl: smtpConfig.use_tls ?? true,
+    });
+  }, [smtpConfig]);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (emailData.senha) {
-      setEmailData((prev) => ({ ...prev, senhaConfigurada: true, senha: "" }));
+    if (activeTab === "oficios") {
+      try {
+        await updateOficioSettings.mutateAsync({
+          header: oficiosData.cabecalho,
+          footer: oficiosData.rodape,
+          signers: oficiosData.assinantes.map((a) => ({
+            type: a.type,
+            id: a.signer_id,
+          })),
+        });
+
+        setToastMessage("Configurações de ofícios salvas com sucesso!");
+      } catch (error: any) {
+        const errors = error?.response?.data?.errors;
+        const firstError = errors && Object.values(errors)[0];
+        const message =
+          (Array.isArray(firstError) ? firstError[0] : firstError) ||
+          error?.response?.data?.message ||
+          "Erro ao salvar configurações de ofícios.";
+        setToastMessage(message);
+      }
+      setTimeout(() => setToastMessage(""), 3000);
+      return;
+    }
+
+    if (activeTab === "email") {
+      try {
+        await updateSmtpConfig.mutateAsync({
+          host: emailData.servidorSmtp,
+          port: Number(emailData.porta),
+          username: emailData.usuario,
+          from_name: emailData.remetenteNome,
+          from_email: emailData.remetenteEmail,
+          use_tls: emailData.usarSsl,
+          ...(emailData.senha ? { password: emailData.senha } : {}),
+        });
+
+        if (emailData.senha) {
+          setEmailData((prev) => ({
+            ...prev,
+            senhaConfigurada: true,
+            senha: "",
+          }));
+        }
+
+        setToastMessage("Configurações de e-mail salvas com sucesso!");
+      } catch (error: any) {
+        const errors = error?.response?.data?.errors;
+        const firstError = errors && Object.values(errors)[0];
+        const message =
+          (Array.isArray(firstError) ? firstError[0] : firstError) ||
+          error?.response?.data?.message ||
+          "Erro ao salvar configurações de e-mail.";
+        setToastMessage(message);
+      }
+      setTimeout(() => setToastMessage(""), 3000);
+      return;
     }
 
     setToastMessage("Configurações salvas com sucesso!");
@@ -123,47 +218,46 @@ export default function Configuracoes() {
     }
   };
 
-  const handleAddAssinante = (user: any) => {
-    if (oficiosData.regraAssinatura === "UM_USUARIO") {
-      setOficiosData({ ...oficiosData, assinantes: [user] });
-    } else {
-      if (!oficiosData.assinantes.find((a) => a.id === user.id)) {
-        setOficiosData({
-          ...oficiosData,
-          assinantes: [...oficiosData.assinantes, user],
-        });
-      }
+  const handleAddAssinante = (candidate: SignerCandidate) => {
+    const alreadyAdded = oficiosData.assinantes.some(
+      (a) => a.type === candidate.type && a.signer_id === candidate.signer_id,
+    );
+    if (!alreadyAdded) {
+      setOficiosData({
+        ...oficiosData,
+        assinantes: [...oficiosData.assinantes, candidate],
+      });
     }
     setAssinanteInput("");
     setIsSearchingUser(false);
   };
 
-  const handleRemoveAssinante = (idToRemove: string) => {
+  const handleRemoveAssinante = (candidate: SignerCandidate) => {
     setOficiosData({
       ...oficiosData,
-      assinantes: oficiosData.assinantes.filter((a) => a.id !== idToRemove),
+      assinantes: oficiosData.assinantes.filter(
+        (a) =>
+          !(a.type === candidate.type && a.signer_id === candidate.signer_id),
+      ),
     });
   };
 
-  const handleRegraAssinaturaChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ) => {
-    const novaRegra = e.target.value;
-    setOficiosData({
-      ...oficiosData,
-      regraAssinatura: novaRegra,
-      // Se mudar para UM_USUARIO e tiver mais de um, mantém só o primeiro
-      assinantes:
-        novaRegra === "UM_USUARIO" && oficiosData.assinantes.length > 1
-          ? [oficiosData.assinantes[0]]
-          : oficiosData.assinantes,
-    });
-  };
+  const signerCandidates: SignerCandidate[] = [
+    ...usuariosList.map((u: any) => ({
+      type: "user" as const,
+      signer_id: u.id,
+      name: u.name,
+      cargo: u.cargo,
+    })),
+    ...cargosList.map((c: any) => ({
+      type: "position" as const,
+      signer_id: c.id,
+      name: c.name,
+    })),
+  ];
 
-  const filteredUsers = usuarios.filter(
-    (user) =>
-      user.name.toLowerCase().includes(assinanteInput.toLowerCase()) ||
-      user.cargo.toLowerCase().includes(assinanteInput.toLowerCase()),
+  const filteredSignerCandidates = signerCandidates.filter((candidate) =>
+    candidate.name.toLowerCase().includes(assinanteInput.toLowerCase()),
   );
 
   return (
@@ -459,6 +553,11 @@ export default function Configuracoes() {
                             Defina o formato de numeração e as regras de
                             assinatura.
                           </p>
+                          {isLoadingOficioSettings && (
+                            <p className="text-sm text-slate-400 mt-2">
+                              Carregando configurações...
+                            </p>
+                          )}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -475,17 +574,12 @@ export default function Configuracoes() {
                                 <Textarea
                                   rows={4}
                                   value={oficiosData.cabecalho}
-                                  onChange={(e) => {
-                                    const value = e.target.value;
+                                  onChange={(e) =>
                                     setOficiosData({
                                       ...oficiosData,
-                                      cabecalho: value,
-                                    });
-                                    localStorage.setItem(
-                                      "oficioCabecalho",
-                                      value,
-                                    );
-                                  }}
+                                      cabecalho: e.target.value,
+                                    })
+                                  }
                                   placeholder="Ex: Ordem dos Advogados do Brasil&#10;Seccional Mato Grosso&#10;6ª Subseção - Sinop"
                                 />
                                 <p className="text-xs text-slate-500 mt-1">
@@ -501,14 +595,12 @@ export default function Configuracoes() {
                                 <Textarea
                                   rows={2}
                                   value={oficiosData.rodape}
-                                  onChange={(e) => {
-                                    const value = e.target.value;
+                                  onChange={(e) =>
                                     setOficiosData({
                                       ...oficiosData,
-                                      rodape: value,
-                                    });
-                                    localStorage.setItem("oficioRodape", value);
-                                  }}
+                                      rodape: e.target.value,
+                                    })
+                                  }
                                   placeholder="Ex: OAB Mato Grosso 6ª subseção - Sinop"
                                 />
                                 <p className="text-xs text-slate-500 mt-1">
@@ -525,23 +617,6 @@ export default function Configuracoes() {
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                              <div className="md:col-span-6">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
-                                  Exigência de Assinaturas
-                                </label>
-                                <Select
-                                  value={oficiosData.regraAssinatura}
-                                  onChange={handleRegraAssinaturaChange}
-                                >
-                                  <option value="UM_USUARIO">
-                                    Aprovação por um usuário
-                                  </option>
-                                  <option value="MULTIPLOS_USUARIOS">
-                                    Aprovação por múltiplos usuários
-                                  </option>
-                                </Select>
-                              </div>
-
                               <div
                                 className="md:col-span-12 relative"
                                 ref={searchRef}
@@ -552,78 +627,93 @@ export default function Configuracoes() {
                                 <div className="p-2 bg-white border border-slate-200 rounded-lg focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-colors min-h-[42px] flex flex-wrap gap-2">
                                   {oficiosData.assinantes.map((assinante) => (
                                     <span
-                                      key={assinante.id}
-                                      className="inline-flex items-center px-2.5 py-1 rounded-md text-sm font-medium bg-blue-100 text-blue-800"
+                                      key={`${assinante.type}-${assinante.signer_id}`}
+                                      className={`inline-flex items-center px-2.5 py-1 rounded-md text-sm font-medium ${
+                                        assinante.type === "position"
+                                          ? "bg-purple-100 text-purple-800"
+                                          : "bg-blue-100 text-blue-800"
+                                      }`}
                                     >
-                                      {assinante.name} ({assinante.cargo})
+                                      {assinante.type === "position"
+                                        ? `Cargo: ${assinante.name}`
+                                        : assinante.cargo
+                                          ? `${assinante.name} (${assinante.cargo})`
+                                          : assinante.name}
                                       <button
                                         type="button"
                                         onClick={() =>
-                                          handleRemoveAssinante(assinante.id)
+                                          handleRemoveAssinante(assinante)
                                         }
-                                        className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-blue-600 hover:bg-blue-200 hover:text-blue-900 focus:outline-none"
+                                        className={`ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full focus:outline-none ${
+                                          assinante.type === "position"
+                                            ? "text-purple-600 hover:bg-purple-200 hover:text-purple-900"
+                                            : "text-blue-600 hover:bg-blue-200 hover:text-blue-900"
+                                        }`}
                                       >
                                         <X className="w-3 h-3" />
                                       </button>
                                     </span>
                                   ))}
-                                  {!(
-                                    oficiosData.regraAssinatura ===
-                                      "UM_USUARIO" &&
-                                    oficiosData.assinantes.length > 0
-                                  ) && (
-                                    <div className="flex-1 min-w-[200px] relative flex items-center">
-                                      <Search className="w-4 h-4 text-slate-400 absolute left-2" />
-                                      <Input
-                                        type="text"
-                                        value={assinanteInput}
-                                        onChange={(e) => {
-                                          setAssinanteInput(e.target.value);
-                                          setIsSearchingUser(true);
-                                        }}
-                                        onFocus={() => setIsSearchingUser(true)}
-                                        placeholder="Buscar usuário cadastrado..."
-                                        className="w-full pl-8 pr-3 py-1 outline-none bg-transparent text-sm text-slate-900 placeholder-slate-400 border-0 focus-visible:ring-0 shadow-none min-h-0 h-auto"
-                                      />
-                                    </div>
-                                  )}
+                                  <div className="flex-1 min-w-[200px] relative flex items-center">
+                                    <Search className="w-4 h-4 text-slate-400 absolute left-2" />
+                                    <Input
+                                      type="text"
+                                      value={assinanteInput}
+                                      onChange={(e) => {
+                                        setAssinanteInput(e.target.value);
+                                        setIsSearchingUser(true);
+                                      }}
+                                      onFocus={() => setIsSearchingUser(true)}
+                                      placeholder="Buscar usuário cadastrado..."
+                                      className="w-full pl-8 pr-3 py-1 outline-none bg-transparent text-sm text-slate-900 placeholder-slate-400 border-0 focus-visible:ring-0 shadow-none min-h-0 h-auto"
+                                    />
+                                  </div>
                                 </div>
                                 <p className="text-xs text-slate-500 mt-1">
-                                  {oficiosData.regraAssinatura === "UM_USUARIO"
-                                    ? "Selecione apenas um usuário para assinar os ofícios."
-                                    : "Busque e selecione os usuários que poderão assinar os ofícios."}
+                                  Busque e selecione as pessoas ou cargos que
+                                  poderão assinar os ofícios. Selecione apenas
+                                  um para exigir aprovação de um único
+                                  usuário.
                                 </p>
 
                                 {isSearchingUser && (
                                   <div className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                    {filteredUsers.length > 0 ? (
+                                    {filteredSignerCandidates.length > 0 ? (
                                       <ul className="py-1">
-                                        {filteredUsers.map((user) => (
-                                          <li
-                                            key={user.id}
-                                            onClick={() =>
-                                              handleAddAssinante(user)
-                                            }
-                                            className={`px-4 py-2 text-sm cursor-pointer hover:bg-emerald-50 flex flex-col ${
-                                              oficiosData.assinantes.some(
-                                                (a) => a.id === user.id,
-                                              )
-                                                ? "opacity-50 cursor-not-allowed"
-                                                : ""
-                                            }`}
-                                          >
-                                            <span className="font-medium text-slate-900">
-                                              {user.name}
-                                            </span>
-                                            <span className="text-xs text-slate-500">
-                                              {user.cargo}
-                                            </span>
-                                          </li>
-                                        ))}
+                                        {filteredSignerCandidates.map(
+                                          (candidate) => (
+                                            <li
+                                              key={`${candidate.type}-${candidate.signer_id}`}
+                                              onClick={() =>
+                                                handleAddAssinante(candidate)
+                                              }
+                                              className={`px-4 py-2 text-sm cursor-pointer hover:bg-emerald-50 flex flex-col ${
+                                                oficiosData.assinantes.some(
+                                                  (a) =>
+                                                    a.type ===
+                                                      candidate.type &&
+                                                    a.signer_id ===
+                                                      candidate.signer_id,
+                                                )
+                                                  ? "opacity-50 cursor-not-allowed"
+                                                  : ""
+                                              }`}
+                                            >
+                                              <span className="font-medium text-slate-900">
+                                                {candidate.name}
+                                              </span>
+                                              <span className="text-xs text-slate-500">
+                                                {candidate.type === "position"
+                                                  ? "Cargo"
+                                                  : candidate.cargo || "Pessoa"}
+                                              </span>
+                                            </li>
+                                          ),
+                                        )}
                                       </ul>
                                     ) : (
                                       <div className="px-4 py-3 text-sm text-slate-500 text-center">
-                                        Nenhum usuário encontrado.
+                                        Nenhum usuário ou cargo encontrado.
                                       </div>
                                     )}
                                   </div>
@@ -645,6 +735,11 @@ export default function Configuracoes() {
                             Configure as credenciais do servidor SMTP para o
                             envio de e-mails pelo sistema.
                           </p>
+                          {isLoadingSmtp && (
+                            <p className="text-sm text-slate-400 mt-2">
+                              Carregando configurações...
+                            </p>
+                          )}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -783,7 +878,16 @@ export default function Configuracoes() {
                     )}
 
                     <div className="flex justify-end pt-6 border-t border-slate-200">
-                      <Button type="submit" icon={<Save className="w-4 h-4" />}>
+                      <Button
+                        type="submit"
+                        icon={<Save className="w-4 h-4" />}
+                        isLoading={
+                          (activeTab === "email" &&
+                            updateSmtpConfig.isPending) ||
+                          (activeTab === "oficios" &&
+                            updateOficioSettings.isPending)
+                        }
+                      >
                         Salvar Alterações
                       </Button>
                     </div>
