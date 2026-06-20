@@ -14,4 +14,31 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+
+    if (status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }
+
+    if (status === 403 && error.response) {
+      const message = error.response.data?.message;
+      if (!message || message === "This action is unauthorized.") {
+        error.response.data = {
+          ...error.response.data,
+          message: "Você não tem permissão para realizar esta ação.",
+        };
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
+
 export { api };

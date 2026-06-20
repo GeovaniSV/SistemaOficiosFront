@@ -26,10 +26,17 @@ import {
   useRestoreUsuario,
 } from "../hooks/queries/useUsers";
 import { useCargos } from "../hooks/queries/useCargos";
+import { useRoles } from "../hooks/queries/useRoles";
 
 export default function Usuarios() {
-  const { data: usuarios = [], isLoading, isError } = useUsuarios();
+  const {
+    data: usuarios = [],
+    isLoading,
+    isError,
+    error,
+  } = useUsuarios();
   const { data: cargos = [] } = useCargos();
+  const { data: roles = [] } = useRoles();
   const addUsuario = useAddUsuario();
   const updateUsuario = useUpdateUsuario();
   const deleteUsuario = useDeleteUsuario();
@@ -289,7 +296,9 @@ export default function Usuarios() {
                             colSpan={5}
                             className="px-6 py-8 text-center text-rose-500"
                           >
-                            Erro ao carregar usuários da API.
+                            {(error as any)?.response?.status === 403
+                              ? "Você não tem permissão para visualizar os usuários."
+                              : "Erro ao carregar usuários da API."}
                           </td>
                         </tr>
                       )}
@@ -476,9 +485,11 @@ export default function Usuarios() {
                       }
                     >
                       <option value="">Nenhum</option>
-                      <option value="Administrador">Administrador</option>
-                      <option value="Usuário Padrão">Usuário Padrão</option>
-                      <option value="Visualizador">Visualizador</option>
+                      {roles.map((role) => (
+                        <option key={role.id} value={role.name}>
+                          {role.name}
+                        </option>
+                      ))}
                     </Select>
                   </div>
                   <div>

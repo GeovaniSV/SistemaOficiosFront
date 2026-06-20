@@ -12,6 +12,7 @@ import "./index.css";
 import Login from "./components/Login.tsx";
 import Oficios from "./components/Oficios.tsx";
 import Usuarios from "./components/Usuarios.tsx";
+import Papeis from "./components/Papeis.tsx";
 import Templates from "./components/Templates.tsx";
 import Cargos from "./components/Cargos.tsx";
 import Configuracoes from "./components/Configuracoes.tsx";
@@ -32,6 +33,7 @@ const router = createBrowserRouter([
   // Sidebar/Header, por isso ficam fora do AppLayout (que já provê esse
   // wrapper via Outlet).
   { path: "/usuarios", element: <Usuarios /> },
+  { path: "/papeis", element: <Papeis /> },
   { path: "/templates", element: <Templates /> },
   { path: "/cargos", element: <Cargos /> },
   { path: "/configuracoes", element: <Configuracoes /> },

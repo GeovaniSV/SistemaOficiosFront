@@ -49,60 +49,58 @@ function CreateOficios() {
   const { data: contatos = [], isLoading } = useContatos();
 
   const handleSubmit = (status: string) => {
-    selectedResponsibles.map((res) => {
-      res.id;
-      res.departament;
-      const payload = {
-        ...formData,
-        content: content,
-        responsibles: [res.id],
-        destination_contact_id: selectedDestinatarios[0]?.id,
-        priority: PriorityHash[formData.priority],
-        department: res.department,
-        submit: status,
-      };
+    const destinationContactId = selectedDestinatarios[0]?.id;
 
-      if (!payload.destination_contact_id) {
-        setToastType("error");
-        setToastMessage("Por favor, selecione pelo menos um destinatário.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
-      if (!payload.responsibles) {
-        setToastType("error");
-        setToastMessage("Por favor, selecione pelo menos um responsável.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
-      if (!payload.subject) {
-        setToastType("error");
-        setToastMessage("Por favor, preencha o assunto.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
-      if (!payload.content.trim()) {
-        setToastType("error");
-        setToastMessage("Por favor, preencha o conteúdo do ofício.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
+    if (!destinationContactId) {
+      setToastType("error");
+      setToastMessage("Por favor, selecione pelo menos um destinatário.");
+      setTimeout(() => setToastMessage(""), 3000);
+      return;
+    }
+    if (selectedResponsibles.length === 0) {
+      setToastType("error");
+      setToastMessage("Por favor, selecione pelo menos um responsável.");
+      setTimeout(() => setToastMessage(""), 3000);
+      return;
+    }
+    if (!formData.subject) {
+      setToastType("error");
+      setToastMessage("Por favor, preencha o assunto.");
+      setTimeout(() => setToastMessage(""), 3000);
+      return;
+    }
+    if (!content.trim()) {
+      setToastType("error");
+      setToastMessage("Por favor, preencha o conteúdo do ofício.");
+      setTimeout(() => setToastMessage(""), 3000);
+      return;
+    }
 
-      if (!payload.department.trim()) {
-        setToastType("error");
-        setToastMessage("Por favor, selecione um contato do destinatário.");
-        setTimeout(() => setToastMessage(""), 3000);
-        return;
-      }
+    const payload = {
+      ...formData,
+      content: content,
+      responsibles: selectedResponsibles.map((res) => res.id),
+      destination_contact_id: destinationContactId,
+      priority: PriorityHash[formData.priority],
+      department: selectedResponsibles[0]?.department ?? null,
+      submit: status,
+    };
 
-      addOficio.mutate(payload);
+    addOficio.mutate(payload, {
+      onSuccess: () => {
+        setToastType("success");
+        setToastMessage("Ofício submetido à aprovação com sucesso!");
+        setTimeout(() => {
+          setToastMessage("");
+          navigate("/oficios");
+        }, 2000);
+      },
+      onError: () => {
+        setToastType("error");
+        setToastMessage("Erro ao salvar o ofício. Tente novamente.");
+        setTimeout(() => setToastMessage(""), 3000);
+      },
     });
-
-    setToastType("success");
-    setToastMessage("Ofício submetido à aprovação com sucesso!");
-    setTimeout(() => {
-      setToastMessage("");
-      navigate("/oficios");
-    }, 2000);
   };
 
   return (
@@ -142,12 +140,14 @@ function CreateOficios() {
               variant="outline"
               icon={<Save className="w-4 h-4" />}
               onClick={() => handleSubmit("false")}
+              disabled={addOficio.isPending}
             >
               Salvar
             </Button>
             <Button
               onClick={() => handleSubmit("true")}
               icon={<Send className="w-4 h-4" />}
+              disabled={addOficio.isPending}
             >
               Submeter
             </Button>
@@ -264,6 +264,7 @@ function CreateOficios() {
               onClick={() => handleSubmit("PENDING")}
               className="w-full justify-center"
               icon={<Send className="w-4 h-4" />}
+              disabled={addOficio.isPending}
             >
               Submeter
             </Button>
@@ -272,6 +273,7 @@ function CreateOficios() {
               className="w-full justify-center"
               icon={<Save className="w-4 h-4" />}
               onClick={() => handleSubmit("DRAFT")}
+              disabled={addOficio.isPending}
             >
               Salvar
             </Button>

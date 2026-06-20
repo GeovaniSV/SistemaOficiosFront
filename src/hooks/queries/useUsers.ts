@@ -9,8 +9,6 @@ export function useProfile() {
   });
 }
 
-// API não faz eager-load de `position`/`roles` no index/show, então esses
-// campos ficam vazios até o backend passar a retornar essas relações.
 function adaptUsuario(apiUser: any) {
   return {
     id: apiUser.id,
