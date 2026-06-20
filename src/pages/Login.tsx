@@ -80,13 +80,13 @@ export default function Login() {
                   >
                     Senha
                   </label>
-                  <button
+                  {/* <button
                     type="button"
                     onClick={() => navigate("/esqueci-senha")}
                     className="text-xs font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
                   >
                     Esqueceu a senha?
-                  </button>
+                  </button> */}
                 </div>
                 <Input
                   id="password"
