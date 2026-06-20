@@ -23,11 +23,12 @@ const hashStatus: Record<string, string> = {
 };
 
 export function useOficioFilter(itemsPerPage: number = 10) {
-  const { data: oficios = [], refetch } = useOficiosQuery();
+  const [currentPage, setCurrentPage] = useState(1);
+  const { data, refetch } = useOficiosQuery(currentPage);
+  const oficios = data?.data ?? [];
   const updateStatusMutation = useUpdateOficioStatusMutation();
 
   console.log(oficios);
-
   const [filters, setFilters] = useState<UseOficiosFilters>({
     generalSearch: "",
     statusFilter: "",
@@ -35,7 +36,6 @@ export function useOficioFilter(itemsPerPage: number = 10) {
     dateFilter: "",
     // origemFilter: "",
   });
-  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredOficios = useMemo(() => {
     return oficios.filter((oficio: any) => {
@@ -53,8 +53,6 @@ export function useOficioFilter(itemsPerPage: number = 10) {
       const matchesStatus =
         filters.statusFilter === "" ||
         hashStatus[oficio.status] === filters.statusFilter.toLowerCase();
-
-      console.log(filters.statusFilter);
 
       const matchesAuthor =
         filters.authorFilter === "" ||
@@ -76,12 +74,7 @@ export function useOficioFilter(itemsPerPage: number = 10) {
     });
   }, [oficios, filters]);
 
-  const totalPages = Math.ceil(filteredOficios.length / itemsPerPage);
-
-  const paginatedOficios = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredOficios.slice(start, start + itemsPerPage);
-  }, [filteredOficios, currentPage, itemsPerPage]);
+  const totalPages = data?.last_page ?? 1;
 
   const getOficioById = useCallback(
     (id: string) => oficios.find((o: any) => o.id === id),
@@ -104,7 +97,7 @@ export function useOficioFilter(itemsPerPage: number = 10) {
     currentPage,
     setCurrentPage,
     totalPages,
-    paginatedOficios,
+    paginatedOficios: filteredOficios,
     getOficioById,
   };
 }

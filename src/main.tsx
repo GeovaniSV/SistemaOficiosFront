@@ -10,7 +10,6 @@ import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 
 import Login from "./pages/Login.tsx";
-import Oficios from "./components/Oficios.tsx";
 import ListContatos from "./pages/Contatos/ListContatos.tsx";
 import EditContato from "./pages/Contatos/EditContato.tsx";
 import CreateContato from "./pages/Contatos/CreateContato.tsx";

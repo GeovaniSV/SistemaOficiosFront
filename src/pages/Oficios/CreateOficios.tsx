@@ -66,32 +66,31 @@ function CreateOficios() {
     }
 
     try {
-      const promises = selectedResponsibles.map((resp) => {
-        const dest = selectedDestinatarios.find((d) =>
-          d.responsibles?.some((r: any) => r.id === resp.id),
-        );
-
+      let destId;
+      const res = selectedResponsibles.map((r) => {
+        return r.id;
+      });
+      selectedDestinatarios.map((dest) => {
         const payload = {
           ...formData,
           content: content,
-          responsibles: [resp.id],
+          responsibles: res,
           destination_contact_id: dest?.id,
           priority: PriorityHash[formData.priority],
-          department: resp.department,
           submit: status,
         };
 
-        return addOficio.mutateAsync(payload);
-      });
+        console.log("Responsible: ", res);
+        console.log(payload);
 
-      await Promise.all(promises);
+        addOficio.mutateAsync(payload);
+      });
 
       toast.success(
         selectedResponsibles.length > 1
           ? `${selectedResponsibles.length} ofícios submetidos à aprovação com sucesso!`
           : "Ofício submetido à aprovação com sucesso!",
       );
-
       navigate("/oficios");
     } catch (error) {
       toast.error("Erro ao submeter um ou mais ofícios.");

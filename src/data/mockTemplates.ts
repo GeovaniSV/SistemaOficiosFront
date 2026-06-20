@@ -1,5 +1,0 @@
-export const mockTemplates = [
-  { id: 1, title: 'Solicitação de Material', content: 'Prezado(a) Senhor(a),\n\nCumprimentando-o cordialmente, venho por meio deste solicitar o fornecimento dos seguintes materiais de expediente para uso neste departamento:\n\n1. [Item 1]\n2. [Item 2]\n\nCertos de contarmos com a vossa colaboração, subscrevemo-nos.\n\nAtenciosamente,' },
-  { id: 2, title: 'Convocação para Reunião', content: 'Prezado(a) Senhor(a),\n\nSirvo-me do presente para convocar Vossa Senhoria para participar de reunião ordinária que se realizará no dia [Data], às [Horário], na [Local/Sala], com a seguinte pauta:\n\n- [Pauta 1]\n- [Pauta 2]\n\nSua presença é de suma importância.\n\nAtenciosamente,' },
-  { id: 3, title: 'Agradecimento Oficial', content: 'Prezado(a) Senhor(a),\n\nEm nome desta instituição, venho expressar nossos sinceros agradecimentos pela inestimável colaboração prestada durante o [Evento/Situação].\n\nA dedicação e o profissionalismo demonstrados foram fundamentais para o sucesso de nossas atividades.\n\nRenovo protestos de elevada estima e distinta consideração.\n\nAtenciosamente,' }
-];
