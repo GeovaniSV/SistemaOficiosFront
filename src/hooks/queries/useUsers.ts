@@ -9,6 +9,15 @@ export function useProfile() {
   });
 }
 
+export function useLogout() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.delete(`/api/auth/logout`),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["user", "me"] }),
+  });
+}
+
 function adaptUsuario(apiUser: any) {
   return {
     id: apiUser.id,

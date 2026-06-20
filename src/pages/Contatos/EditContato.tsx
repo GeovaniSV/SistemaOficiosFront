@@ -17,6 +17,7 @@ import { useContato, useUpdateContato } from "../../hooks/queries/useContatos";
 import { data, useNavigate, useParams } from "react-router-dom";
 import { ContatoType } from "../../types/contato";
 import { ContatoResponsibleModal } from "@/src/components/ContatoResponsibleModal";
+import { toast, ToastContainer } from "react-toastify";
 
 function ContatosEditPage() {
   const navigate = useNavigate();
@@ -25,7 +26,6 @@ function ContatosEditPage() {
   const updateContato = useUpdateContato();
 
   const [formData, setFormData] = useState<ContatoType | null>(null);
-  const [toastMessage, setToastMessage] = useState("");
   const [isResponsibleModalOpen, setIsResponsibleModalOpen] = useState(false);
   const [currentResponsible, setCurrentResponsible] = useState<any>(null);
   const [responsiblePage, setResponsiblePage] = useState(1);
@@ -43,38 +43,38 @@ function ContatosEditPage() {
     if (contato) {
       updateContato.mutate({
         ...contato,
-        active: contato.active === false ? true : false,
+        is_active: contato.is_active === false ? true : false,
       });
-      setToastMessage(
-        `Contato ${contato.active === false ? "reativado" : "inativado"} com sucesso.`,
+      toast.success(
+        `Contato ${contato.is_active === false ? "reativado" : "inativado"} com sucesso.`,
       );
-      setTimeout(() => setToastMessage(""), 3000);
     }
   };
 
   const handleSaveContact = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.name) {
-      setToastMessage("O campo Nome Completo é obrigatório.");
-      setTimeout(() => setToastMessage(""), 3000);
-      return;
+    try {
+      if (!formData.name || !formData.name.trim()) {
+        toast.error("O campo Nome Completo é obrigatório.");
+
+        return;
+      }
+
+      if (!formData.responsibles || formData.responsibles.length === 0) {
+        toast.error("É necessário adicionar pelo menos um responsável.");
+        return;
+      }
+
+      console.log(formData);
+
+      updateContato.mutate(formData);
+      toast.success("Contato salvo com sucesso!");
+
+      navigate("/contatos");
+    } catch (error: any) {
+      toast.error(error);
     }
-
-    if (!formData.responsibles || formData.responsibles.length === 0) {
-      setToastMessage("É necessário adicionar pelo menos um responsável.");
-      setTimeout(() => setToastMessage(""), 3000);
-      return;
-    }
-
-    updateContato.mutate(formData);
-    setToastMessage("Contato salvo com sucesso!");
-
-    navigate("/contatos");
-
-    setTimeout(() => {
-      setToastMessage("");
-    }, 2000);
   };
 
   const handleOpenResponsibleModal = (responsible?: any) => {
@@ -113,10 +113,9 @@ function ContatosEditPage() {
       !responsible.position ||
       !responsible.position
     ) {
-      setToastMessage(
+      toast.error(
         "Os campos Nome, Tratamento e Cargo/Posição são obrigatórios.",
       );
-      setTimeout(() => setToastMessage(""), 3000);
       return;
     }
 
@@ -133,8 +132,7 @@ function ContatosEditPage() {
 
     setFormData({ ...formData, responsibles: newResponsibles });
     setIsResponsibleModalOpen(false);
-    setToastMessage("Responsável salvo com sucesso!");
-    setTimeout(() => setToastMessage(""), 3000);
+    toast.success("Responsável salvo com sucesso!");
   };
 
   return (
@@ -170,14 +168,14 @@ function ContatosEditPage() {
                 <input
                   type="checkbox"
                   className="sr-only peer"
-                  checked={formData.active !== false}
+                  checked={formData.is_active !== false}
                   onChange={(e) =>
-                    setFormData({ ...formData, active: e.target.checked })
+                    setFormData({ ...formData, is_active: e.target.checked })
                   }
                 />
                 <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 peer-disabled:bg-emerald-400"></div>
                 <span className="ml-3 text-sm font-medium text-slate-700">
-                  {formData.active !== false ? "Ativo" : "Inativo"}
+                  {formData.is_active !== false ? "Ativo" : "Inativo"}
                 </span>
               </label>
             </div>
@@ -504,12 +502,7 @@ function ContatosEditPage() {
         />
 
         {/* Toast Notification */}
-        {toastMessage && (
-          <div className="fixed bottom-4 right-4 z-50 flex items-center bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg animate-in slide-in-from-bottom-5">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 mr-3" />
-            <p className="text-sm font-medium">{toastMessage}</p>
-          </div>
-        )}
+        <ToastContainer closeOnClick={true} />
       </div>
     </main>
   );
