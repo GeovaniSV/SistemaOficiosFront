@@ -51,27 +51,19 @@ function CreateOficios() {
     const destinationContactId = selectedDestinatarios[0]?.id;
 
     if (!destinationContactId) {
-      setToastType("error");
-      setToastMessage("Por favor, selecione pelo menos um destinatário.");
-      setTimeout(() => setToastMessage(""), 3000);
+      toast.error("Por favor, selecione pelo menos um destinatário.");
       return;
     }
     if (selectedResponsibles.length === 0) {
-      setToastType("error");
-      setToastMessage("Por favor, selecione pelo menos um responsável.");
-      setTimeout(() => setToastMessage(""), 3000);
+      toast.error("Por favor, selecione pelo menos um responsável.");
       return;
     }
     if (!formData.subject) {
-      setToastType("error");
-      setToastMessage("Por favor, preencha o assunto.");
-      setTimeout(() => setToastMessage(""), 3000);
+      toast.error("Por favor, preencha o assunto.");
       return;
     }
     if (!content.trim()) {
-      setToastType("error");
-      setToastMessage("Por favor, preencha o conteúdo do ofício.");
-      setTimeout(() => setToastMessage(""), 3000);
+      toast.error("Por favor, preencha o conteúdo do ofício.");
       return;
     }
 
@@ -87,17 +79,11 @@ function CreateOficios() {
 
     addOficio.mutate(payload, {
       onSuccess: () => {
-        setToastType("success");
-        setToastMessage("Ofício submetido à aprovação com sucesso!");
-        setTimeout(() => {
-          setToastMessage("");
-          navigate("/oficios");
-        }, 2000);
+        toast.success("Ofício submetido à aprovação com sucesso!");
+        setTimeout(() => navigate("/oficios"), 2000);
       },
       onError: () => {
-        setToastType("error");
-        setToastMessage("Erro ao salvar o ofício. Tente novamente.");
-        setTimeout(() => setToastMessage(""), 3000);
+        toast.error("Erro ao salvar o ofício. Tente novamente.");
       },
     });
   };
