@@ -47,55 +47,45 @@ function CreateOficios() {
 
   const { data: contatos = [], isLoading } = useContatos();
 
-  const handleSubmit = async (status: string) => {
-    if (!formData.subject) {
-      toast.error("Necessário preencher o campo assunto.");
-      return;
-    }
-    if (selectedDestinatarios.length === 0) {
-      toast.error("Selecione pelo menos um destinatário.");
+  const handleSubmit = (status: string) => {
+    const destinationContactId = selectedDestinatarios[0]?.id;
+
+    if (!destinationContactId) {
+      toast.error("Por favor, selecione pelo menos um destinatário.");
       return;
     }
     if (selectedResponsibles.length === 0) {
-      toast.error("Selecione pelo menos um responsável.");
+      toast.error("Por favor, selecione pelo menos um responsável.");
       return;
     }
-    if (!content) {
-      toast.error("Necessário preencher o conteúdo do ofício.");
+    if (!formData.subject) {
+      toast.error("Por favor, preencha o assunto.");
+      return;
+    }
+    if (!content.trim()) {
+      toast.error("Por favor, preencha o conteúdo do ofício.");
       return;
     }
 
-    try {
-      const promises = selectedResponsibles.map((resp) => {
-        const dest = selectedDestinatarios.find((d) =>
-          d.responsibles?.some((r: any) => r.id === resp.id),
-        );
+    const payload = {
+      ...formData,
+      content: content,
+      responsibles: selectedResponsibles.map((res) => res.id),
+      destination_contact_id: destinationContactId,
+      priority: PriorityHash[formData.priority],
+      department: selectedResponsibles[0]?.department ?? null,
+      submit: status,
+    };
 
-        const payload = {
-          ...formData,
-          content: content,
-          responsibles: [resp.id],
-          destination_contact_id: dest?.id,
-          priority: PriorityHash[formData.priority],
-          department: resp.department,
-          submit: status,
-        };
-
-        return addOficio.mutateAsync(payload);
-      });
-
-      await Promise.all(promises);
-
-      toast.success(
-        selectedResponsibles.length > 1
-          ? `${selectedResponsibles.length} ofícios submetidos à aprovação com sucesso!`
-          : "Ofício submetido à aprovação com sucesso!",
-      );
-
-      navigate("/oficios");
-    } catch (error) {
-      toast.error("Erro ao submeter um ou mais ofícios.");
-    }
+    addOficio.mutate(payload, {
+      onSuccess: () => {
+        toast.success("Ofício submetido à aprovação com sucesso!");
+        setTimeout(() => navigate("/oficios"), 2000);
+      },
+      onError: () => {
+        toast.error("Erro ao salvar o ofício. Tente novamente.");
+      },
+    });
   };
 
   return (
@@ -131,10 +121,18 @@ function CreateOficios() {
             >
               Cancelar
             </Button>
-
+            <Button
+              variant="outline"
+              icon={<Save className="w-4 h-4" />}
+              onClick={() => handleSubmit("false")}
+              disabled={addOficio.isPending}
+            >
+              Salvar
+            </Button>
             <Button
               onClick={() => handleSubmit("true")}
               icon={<Send className="w-4 h-4" />}
+              disabled={addOficio.isPending}
             >
               Submeter
             </Button>
@@ -251,6 +249,7 @@ function CreateOficios() {
               onClick={() => handleSubmit("PENDING")}
               className="w-full justify-center"
               icon={<Send className="w-4 h-4" />}
+              disabled={addOficio.isPending}
             >
               Submeter
             </Button>
@@ -259,6 +258,7 @@ function CreateOficios() {
               className="w-full justify-center"
               icon={<Save className="w-4 h-4" />}
               onClick={() => handleSubmit("DRAFT")}
+              disabled={addOficio.isPending}
             >
               Salvar
             </Button>
