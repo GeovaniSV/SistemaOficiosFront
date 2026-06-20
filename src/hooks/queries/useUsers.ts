@@ -12,7 +12,7 @@ export function useProfile() {
 export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => api.delete(`/api/auth/logout`),
+    mutationFn: () => api.post(`/api/auth/logout`),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["user", "me"] }),
   });

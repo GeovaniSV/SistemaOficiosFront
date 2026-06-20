@@ -24,6 +24,7 @@ import CreateOficios from "./pages/Oficios/CreateOficios.tsx";
 import ListOficios from "./pages/Oficios/ListOficios.tsx";
 import MeuPerfil from "./pages/Users/ProfilePage.tsx";
 import EditOficios from "./pages/Oficios/EditOficios.tsx";
+import LogsPage from "./pages/CaixaSaida.tsx";
 
 const router = createBrowserRouter([
   { path: "*", element: <Navigate to="/login" /> },
@@ -52,6 +53,8 @@ const router = createBrowserRouter([
 
       //Users
       { path: "/perfil", element: <MeuPerfil /> },
+
+      { path: "/caixa-saida", element: <LogsPage /> },
     ],
   },
 ]);

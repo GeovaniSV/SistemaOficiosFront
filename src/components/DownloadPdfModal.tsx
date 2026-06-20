@@ -3,28 +3,32 @@ import { CheckCircle2, Download } from "lucide-react";
 import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
 import { OficioType } from "../types/oficio";
+import { useDownloadOficioPdf } from "../hooks/queries/useOficios";
 
 interface DownloadPdfModalProps {
   isOpen: boolean;
   onClose: () => void;
   oficio: OficioType;
-  onDownload: (destinationContactId: number) => void;
 }
 
 export default function DownloadPdfModal({
   isOpen,
   onClose,
   oficio,
-  onDownload,
 }: DownloadPdfModalProps) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const useDownload = useDownloadOficioPdf();
 
   if (!oficio) return null;
 
   const destinatarios = Array.isArray(oficio.destination_contact)
     ? oficio.destination_contact
     : [oficio.destination_contact];
-  console.log(oficio);
+  console.log("Mensagem: ", oficio);
+  console.log("Id Selected: ", selectedId);
+  const handleDownload = () => {
+    useDownload.mutate({ id: oficio.messages[0].id });
+  };
   return (
     <Modal
       isOpen={isOpen}
@@ -83,8 +87,8 @@ export default function DownloadPdfModal({
             onClick={() => {
               if (!selectedId) return;
 
-              onDownload(selectedId);
-              onClose();
+              handleDownload();
+              // onClose();
             }}
           >
             Baixar PDF

@@ -10,6 +10,7 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
@@ -69,7 +70,7 @@ export default function Papeis() {
   const itemsPerPage = 10;
 
   const filteredRoles = papeis.filter(
-    (role) =>
+    (role: any) =>
       role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       role.description.toLowerCase().includes(searchTerm.toLowerCase()),
   );
@@ -98,7 +99,7 @@ export default function Papeis() {
   };
 
   const handleEditRole = () => {
-    const role = papeis.find((r) => r.id === activeMenuId);
+    const role = papeis.find((r: any) => r.id === activeMenuId);
     if (role) {
       setFormData({
         id: role.id,
@@ -256,9 +257,12 @@ export default function Papeis() {
                             colSpan={2}
                             className="px-6 py-8 text-center text-rose-500"
                           >
-                            {(error as any)?.response?.status === 403
-                              ? "Você não tem permissão para visualizar os papéis."
-                              : "Erro ao carregar papéis da API."}
+                            <p className="inline-flex items-center gap-2">
+                              <AlertTriangle size={18} />
+                              {(error as any)?.response?.status === 403
+                                ? "Você não tem permissão para visualizar os papéis."
+                                : "Erro ao carregar papéis da API."}
+                            </p>
                           </td>
                         </tr>
                       )}

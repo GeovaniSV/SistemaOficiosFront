@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronRight,
   UserPlus,
+  Mail,
 } from "lucide-react";
 import { useLogout } from "../hooks/queries/useUsers";
 
@@ -27,6 +28,7 @@ const navigation = [
       { name: "Template de Ofício", id: "templates" },
     ],
   },
+  { name: "Caixa de Saída", id: "caixa-saida", icon: Mail },
   { name: "Configurações", id: "configuracoes", icon: Settings },
 ];
 

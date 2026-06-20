@@ -45,6 +45,15 @@ export interface OficioType {
   rejection_infos?: {
     REJECTED?: RejectionType[];
   };
+  messages: {
+    created_at: string;
+    id: number;
+    oficio_id: number;
+    responsible_id: number;
+    sent_at: string;
+    status: string;
+    updated_at: string;
+  }[];
 }
 
 export interface PaginatedOficiosType {

@@ -75,3 +75,15 @@ export function useDeleteOficio() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["oficios"] }),
   });
 }
+
+// useOficios.ts (query)
+export function useDownloadOficioPdf() {
+  return useMutation({
+    mutationFn: async ({ id }: { id: number }) => {
+      const response = await api.get(`/message/${id}/download`, {
+        responseType: "blob", // importante para arquivos binários
+      });
+      return response.data;
+    },
+  });
+}
