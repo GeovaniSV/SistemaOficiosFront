@@ -52,13 +52,6 @@ export default function DownloadPdfModal({
     >
       <ToastContainer />
       <div className="space-y-6">
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-          <p className="text-sm text-blue-800">
-            Este ofício possui múltiplos destinatários. Selecione para qual
-            destinatário deseja baixar o PDF.
-          </p>
-        </div>
-
         <div className="space-y-3 max-h-96 overflow-y-auto">
           {destinatarios.map((dest: any) => {
             const selected = selectedId === dest.id;
