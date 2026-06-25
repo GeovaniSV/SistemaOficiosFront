@@ -127,9 +127,6 @@ export function ListOficios() {
         isOpen={isDownloadModalOpen}
         onClose={() => setIsDownloadModalOpen(false)}
         oficio={downloadOficio}
-        onDownload={(destinationId) => {
-          // downloadPdf(destinationId);
-        }}
       />
 
       <OficioInfoModal

@@ -80,7 +80,7 @@ export function useDeleteOficio() {
 export function useDownloadOficioPdf() {
   return useMutation({
     mutationFn: async ({ id }: { id: number }) => {
-      const response = await api.get(`/message/${id}/download`, {
+      const response = await api.get(`/api/messages/${id}/pdf`, {
         responseType: "blob", // importante para arquivos binários
       });
       return response.data;
