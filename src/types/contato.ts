@@ -1,4 +1,5 @@
 export type ContatoType = {
+  active: boolean;
   id?: number;
   name: string;
   type: string;

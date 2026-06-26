@@ -39,6 +39,8 @@ function ContatosListPage() {
     currentPage * itemsPerPage,
   );
 
+  console.log(contatos);
+
   // Reset page when searching
   useEffect(() => {
     setCurrentPage(1);
