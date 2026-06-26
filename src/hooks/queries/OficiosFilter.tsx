@@ -26,8 +26,6 @@ export function useOficioFilter(itemsPerPage: number = 10) {
   const [currentPage, setCurrentPage] = useState(1);
   const { data: response = {}, refetch } = useOficiosQuery(currentPage);
   const updateStatusMutation = useUpdateOficioStatusMutation();
-  console.log(response);
-
   const oficios: any[] = response?.data ?? [];
 
   const [filters, setFilters] = useState<UseOficiosFilters>({
@@ -90,7 +88,7 @@ export function useOficioFilter(itemsPerPage: number = 10) {
     },
     [updateStatusMutation],
   );
-  console.log(totalPages);
+
   return {
     oficios,
     setOficios: () => refetch(), // compatibilidade com código antigo

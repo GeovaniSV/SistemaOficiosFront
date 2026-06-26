@@ -101,17 +101,26 @@ function ContatoCreatePage() {
       // navigate("/contatos");
     } catch (error) {
       if (error instanceof AxiosError) {
-        const httpErrorHash: Record<string, string> = {
-          "The doc has already been taken.":
-            formData.type === "PJ" ? "CNPJ já registrado" : "CPF já registrado",
-          "The address.cep field must be 8 characters.":
-            "Informe um CEP válido",
-          "CNPJ inválido.": "Informe um CNPJ válido",
-          "The responsibles.0.email field must be a valid email address.":
-            "Informe um email válido para o responsável",
-        };
-        toast.error(httpErrorHash[error.response?.data.message]);
-        console.log(error.response!.data);
+        if (error.response?.data.errors) {
+          const httpErrorHash: Record<string, string> = {
+            "The doc has already been taken.":
+              formData.type === "PJ"
+                ? "CNPJ já registrado"
+                : "CPF já registrado",
+            "The address.cep field must be 8 characters.":
+              "Informe um CEP válido",
+            "CNPJ inválido.": "Informe um CNPJ válido",
+            "The responsibles.0.email field must be a valid email address.":
+              "Informe um email válido para o responsável",
+          };
+          for (const [errorKey, errors] of Object.entries(
+            error.response.data.errors as [string, string[]][],
+          )) {
+            errors.forEach((err: any) => {
+              toast.error(`${errorKey}: ${httpErrorHash[err]}`);
+            });
+          }
+        }
       }
     }
   };
