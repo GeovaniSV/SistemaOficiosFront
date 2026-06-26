@@ -198,13 +198,6 @@ export function RecipientSelector({
                           <p className="text-sm font-medium text-slate-900 truncate">
                             {dest.name}
                           </p>
-                          {dest.responsibles &&
-                            dest.responsibles.length > 0 && (
-                              <p className="text-xs text-slate-500 mt-0.5">
-                                {selectedCount} de {dest.responsibles.length}{" "}
-                                responsável(is) selecionado(s)
-                              </p>
-                            )}
                         </div>
                       </div>
 
@@ -247,7 +240,7 @@ export function RecipientSelector({
                             <span className="text-xs font-medium text-slate-500">
                               Responsáveis disponíveis:
                             </span>
-                            <button
+                            {/* <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -282,7 +275,7 @@ export function RecipientSelector({
                               )
                                 ? "Desselecionar todos"
                                 : "Selecionar todos"}
-                            </button>
+                            </button> */}
                           </div>
                           {dest.responsibles.length > 10 && (
                             <div className="mb-3 relative">
@@ -326,10 +319,7 @@ export function RecipientSelector({
                                     onChange={(e) => {
                                       const compositeId = `${resp.id}`;
                                       if (e.target.checked) {
-                                        setSelectedResponsibles((prev) => [
-                                          ...prev,
-                                          resp,
-                                        ]);
+                                        setSelectedResponsibles([resp]);
                                       } else {
                                         setSelectedResponsibles((prev) =>
                                           prev.filter(

@@ -6,8 +6,7 @@ import { OficioType, PaginatedOficiosType } from "@/src/types/oficio";
 export function useOficios(page: number = 1) {
   return useQuery({
     queryKey: ["oficios", page],
-    queryFn: () =>
-      api.get(`/api/oficios?page=${page}`).then((res) => res.data.data),
+    queryFn: () => api.get(`/api/oficios?page=${page}`).then((res) => res.data),
   });
 }
 
@@ -80,7 +79,7 @@ export function useDeleteOficio() {
 export function useDownloadOficioPdf() {
   return useMutation({
     mutationFn: async ({ id }: { id: number }) => {
-      const response = await api.get(`/message/${id}/download`, {
+      const response = await api.get(`/api/messages/${id}/pdf`, {
         responseType: "blob", // importante para arquivos binários
       });
       return response.data;

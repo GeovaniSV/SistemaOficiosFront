@@ -4,6 +4,7 @@ import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
 import { OficioType } from "../types/oficio";
 import { useDownloadOficioPdf } from "../hooks/queries/useOficios";
+import { toast, ToastContainer } from "react-toastify";
 
 interface DownloadPdfModalProps {
   isOpen: boolean;
@@ -24,10 +25,23 @@ export default function DownloadPdfModal({
   const destinatarios = Array.isArray(oficio.destination_contact)
     ? oficio.destination_contact
     : [oficio.destination_contact];
-  console.log("Mensagem: ", oficio);
-  console.log("Id Selected: ", selectedId);
-  const handleDownload = () => {
-    useDownload.mutate({ id: oficio.messages[0].id });
+  const handleDownload = async () => {
+    try {
+      const blob = await useDownload.mutateAsync({ id: oficio.messages[0].id });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `oficio-${oficio.number}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Download iniciado.");
+    } catch (error) {
+      toast.error("Erro ao baixar o PDF.");
+    }
   };
   return (
     <Modal
@@ -36,14 +50,8 @@ export default function DownloadPdfModal({
       title="Selecionar Destinatário"
       maxWidth="max-w-2xl"
     >
+      <ToastContainer />
       <div className="space-y-6">
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-          <p className="text-sm text-blue-800">
-            Este ofício possui múltiplos destinatários. Selecione para qual
-            destinatário deseja baixar o PDF.
-          </p>
-        </div>
-
         <div className="space-y-3 max-h-96 overflow-y-auto">
           {destinatarios.map((dest: any) => {
             const selected = selectedId === dest.id;

@@ -28,6 +28,8 @@ import {
 } from "../hooks/queries/useUsers";
 import { useCargos } from "../hooks/queries/useCargos";
 import { useRoles } from "../hooks/queries/useRoles";
+import { toast, ToastContainer } from "react-toastify";
+import { AxiosError } from "axios";
 
 export default function Usuarios() {
   const { data: usuarios = [], isLoading, isError, error } = useUsuarios();
@@ -149,16 +151,31 @@ export default function Usuarios() {
 
       setView("list");
       setToastMessage("Usuário salvo com sucesso!");
-    } catch (error: any) {
-      const errors = error?.response?.data?.errors;
-      const firstError = errors && Object.values(errors)[0];
-      const message =
-        (Array.isArray(firstError) ? firstError[0] : firstError) ||
-        error?.response?.data?.message ||
-        "Erro ao salvar usuário.";
-      setToastMessage(message);
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.response?.data.errors) {
+          const httpErrorHash: Record<string, string> = {
+            "The email has already been taken.": "Email já cadastrado",
+            "The cpf field format is invalid.": "Informe um CPF válido",
+          };
+          for (const [errorKey, errors] of Object.entries(
+            error.response.data.errors as [string, string[]][],
+          )) {
+            console.log(errorKey, errors);
+            errors.forEach((err: any) => {
+              toast.error(`${errorKey}: ${httpErrorHash[err]}`);
+            });
+          }
+        }
+        console.log(error.response?.data);
+        if (
+          error.response?.data.exception ===
+          "Illuminate\\Database\\UniqueConstraintViolationException"
+        ) {
+          toast.error("CPF já cadastrado");
+        }
+      }
     }
-    setTimeout(() => setToastMessage(""), 3000);
   };
 
   return (
@@ -170,7 +187,7 @@ export default function Usuarios() {
 
       <div className="flex-1 md:pl-64 flex flex-col min-h-screen w-full">
         <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
-
+        <ToastContainer />
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           {view === "list" && (
             <>

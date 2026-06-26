@@ -23,8 +23,10 @@ const hashStatus: Record<string, string> = {
 };
 
 export function useOficioFilter(itemsPerPage: number = 10) {
-  const { data: oficios = [], refetch } = useOficiosQuery();
+  const [currentPage, setCurrentPage] = useState(1);
+  const { data: response = {}, refetch } = useOficiosQuery(currentPage);
   const updateStatusMutation = useUpdateOficioStatusMutation();
+  const oficios: any[] = response?.data ?? [];
 
   const [filters, setFilters] = useState<UseOficiosFilters>({
     generalSearch: "",
@@ -33,7 +35,6 @@ export function useOficioFilter(itemsPerPage: number = 10) {
     dateFilter: "",
     // origemFilter: "",
   });
-  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredOficios = useMemo(() => {
     return oficios.filter((oficio: any) => {
@@ -72,12 +73,9 @@ export function useOficioFilter(itemsPerPage: number = 10) {
     });
   }, [oficios, filters]);
 
-  const totalPages = Math.ceil(filteredOficios.length / itemsPerPage);
+  const totalPages = response.last_page;
 
-  const paginatedOficios = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredOficios.slice(start, start + itemsPerPage);
-  }, [filteredOficios, currentPage, itemsPerPage]);
+  const paginatedOficios = oficios;
 
   const getOficioById = useCallback(
     (id: string) => oficios.find((o: any) => o.id === id),
