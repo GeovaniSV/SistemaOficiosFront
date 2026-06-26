@@ -78,21 +78,13 @@ Preencha:
 
 - **Selecionar Contato**: Busque e escolha quem receberá o ofício
 - **Responsáveis**: Defina as pessoas responsáveis por cada destinatário
-  - Você pode adicionar múltiplos responsáveis
 
 ### **Etapa 3: Conteúdo do Ofício**
 
 Escolha uma das opções:
 
 - **Usar Template**: Selecione um modelo pronto (mais rápido para ofícios recorrentes)
-- **Editar Livre**: Escreva o conteúdo do zero usando o editor de texto rico
-
-O editor permite:
-
-- Formatação de texto (negrito, itálico, sublinhado)
-- Alinhamento (esquerda, centro, direita)
-- Listas numeradas e com marcadores
-- Outras opções de formatação
+- **Editar Livre**: Escreva o conteúdo do zero usando o editor de texto
 
 ### **Etapa 4: Preview (Visualização)**
 
@@ -137,16 +129,6 @@ Clique em um ofício para ver:
 
 ---
 
-## 📦 Arquivando Ofícios
-
-Quando um ofício já foi concluído ou não é mais necessário:
-
-1. Localize o ofício
-2. Clique em **"Arquivar"**
-3. O ofício sai da lista principal (mas continua acessível se necessário)
-
----
-
 ## 👥 Módulo de Contatos
 
 Acesse pela barra lateral: **Contatos**
@@ -167,7 +149,6 @@ Clique em **"Novo Contato"** e preencha:
 
 - **Nome**: Nome do contato/departamento
 - **Tipo**: Classificação do contato
-- **Departamento**: Departamento responsável
 - **Responsável**: Pessoa de contato
 - **Endereço**: Informações adicionais
 
@@ -180,13 +161,6 @@ Após preencher, clique em **"Salvar"** e o contato aparece na lista.
 3. Modifique as informações necessárias
 4. Salve as mudanças
 
-### 🗑️ Removendo um Contato
-
-1. Selecione o contato
-2. Clique em **"Deletar"**
-3. Confirme a ação
-4. O contato é removido do sistema
-
 ---
 
 ## 📨 Caixa de Saída
@@ -197,20 +171,13 @@ Local para acompanhar ofícios que você enviou.
 
 **O que você encontra:**
 
-- Lista de ofícios enviados
-- Status de cada um
-- Histórico de ações
-- Feedback e avaliações recebidas
+A caixa de saída é onde você encontra informações sobre o envio dos oficios. Caso algum oficio não tenha sido enviado, é na caixa de saída que você vai conseguir entender o porque.
 
 Aqui você consegue acompanhar o progresso de cada ofício após o envio.
 
 ---
 
-## ⚙️ Administração - Módulo Cadastro
-
-_Apenas usuários com permissão de administrador veem estas opções_
-
-Acesse pela barra lateral: **Cadastro** (expande um submenu)
+## ⚙️ Usuários
 
 ### 👤 Gerenciamento de Usuários → "Usuários"
 
@@ -222,17 +189,12 @@ Gerencie todos os usuários do sistema.
 - **Adicionar** novo usuário (preencher nome, email, definir permissões)
 - **Editar** informações de um usuário
 - **Ativar/Desativar** usuário
-- **Deletar** usuário
 
 ### 🎭 Papéis e Permissões → "Papéis"
 
 Configure quem pode fazer o quê no sistema.
 
-**Papéis disponíveis:**
-
-- **Admin**: Acesso total a todos os módulos
-- **Gerente**: Acesso a gerenciamento e ofícios
-- **Usuário**: Acesso apenas aos ofícios e contatos
+Você pode criar papéis que contém permissões escolhidas por você, esse papéis serão adicionados a usuários e os usuários irão poder realizar apenas as ações que seus papéis definirem.
 
 Cada papel tem permissões específicas definidas.
 
@@ -245,7 +207,6 @@ Mantenha a lista de cargos disponíveis no sistema.
 - **Visualizar** todos os cargos
 - **Adicionar** novo cargo
 - **Editar** cargo existente
-- **Remover** cargo
 
 ### 📝 Templates de Ofício → "Templates"
 
@@ -255,7 +216,7 @@ Crie modelos reutilizáveis para agilizar o processo.
 
 1. Clique em **"Novo Template"**
 2. Defina um nome e descrição
-3. Escreva o conteúdo do template (pode usar o mesmo editor dos ofícios)
+3. Escreva o conteúdo do template
 4. Salve
 
 Depois, ao criar um novo ofício, você pode:
@@ -286,8 +247,6 @@ Clique no seu nome/avatar no **menu superior (Header)** para acessar seu perfil.
 **O que fazer:**
 
 - Visualizar dados pessoais
-- Editar informações (nome, email)
-- Trocar senha
 - Visualizar nível de acesso
 
 ---
@@ -321,24 +280,22 @@ Ofícios (Tela Principal)
   │
   ├→ Visualizar detalhes
   │
-  ├→ Arquivar
   │
-  ├→ Contatos
+Contatos
   │   ├→ Buscar contato
   │   ├→ Adicionar contato
   │   ├→ Editar contato
   │   └→ Remover contato
   │
-  ├→ Caixa de Saída
+Caixa de Saída
   │   ├→ Acompanhar enviados
   │   └→ Ver feedback
   │
-  ├→ Perfil
+Perfil
   │   ├→ Ver informações
   │   ├→ Editar dados
   │   └→ Trocar senha
   │
-  └→ Logout
 ```
 
 ### Administrador - Fluxo Completo
@@ -349,29 +306,28 @@ Tem acesso a tudo do usuário comum, mais:
 Ofícios (Tela Principal)
   ├→ [Fluxo do usuário comum acima]
   │
-  └→ Cadastro (submenu)
-      ├→ Usuários
-      │   ├→ Listar
-      │   ├→ Adicionar
-      │   ├→ Editar
-      │   └→ Deletar
-      │
-      ├→ Papéis
-      │   └→ Configurar permissões
-      │
-      ├→ Cargos
-      │   ├→ Listar
-      │   ├→ Adicionar
-      │   ├→ Editar
-      │   └→ Deletar
-      │
-      ├→ Templates
-      │   ├→ Criar template
-      │   ├→ Editar
-      │   └→ Deletar
-      │
-      └→ Configurações
-          └→ SMTP
+Usuários
+  │   ├→ Listar
+  │   ├→ Adicionar
+  │   ├→ Editar
+  │   └→ Deletar
+  │
+Papéis
+  │   └→ Configurar permissões
+  │
+Cargos
+  │   ├→ Listar
+  │   ├→ Adicionar
+  │   ├→ Editar
+  │   └→ Deletar
+  │
+Templates
+  │   ├→ Criar template
+  │   ├→ Editar
+  │   └→ Deletar
+  │
+Configurações
+      └→ SMTP
 ```
 
 ---
@@ -380,15 +336,9 @@ Ofícios (Tela Principal)
 
 ### ✅ Boas Práticas
 
-- **Rascunho Primeiro**: Sempre comece salvando como rascunho. Isso permite fazer alterações antes de enviar de verdade.
-
 - **Use Templates**: Se você cria ofícios similares com frequência, crie um template. Isso economiza muito tempo.
 
 - **Filtros e Busca**: Use os filtros da listagem para encontrar ofícios rapidamente. Filtrar por status é especialmente útil.
-
-- **Defina Prioridade Corretamente**: Escolha a prioridade de acordo com a urgência. Assim fica claro para os responsáveis.
-
-- **Indique Responsáveis**: Sempre deixe claro quem é responsável por cada destinatário. Isso evita confusões.
 
 - **Revise no Preview**: Antes de enviar, revise bem o ofício no preview. Erros nessa etapa são fáceis de corrigir.
 
@@ -432,10 +382,6 @@ Razão provável: O ofício já foi aprovado ou enviado. Apenas ofícios em Rasc
 
 Solução: Se realmente precisa mudar, crie um novo ofício com as informações corretas.
 
-### "Como recuperar um ofício arquivado?"
-
-Infelizmente, não há opção de "desarquivar" no fluxo atual. Se precisar recuperar informações, crie um novo ofício com os dados necessários.
-
 ### "Posso usar um template de outro usuário?"
 
 Sim! Os templates são compartilhados entre todos os usuários. Qualquer um pode usar qualquer template disponível.
@@ -451,18 +397,6 @@ Na tela de login, clique em **"Esqueceu a Senha?"** e siga as instruções envia
 ### "Não consigo visualizar determinada funcionalidade"
 
 Alguns recursos dependem das permissões do usuário. Caso necessário, solicite acesso ao administrador do sistema.
-
----
-
-## 📞 Suporte
-
-Se encontrar algum problema ou tiver dúvidas não listadas aqui:
-
-- Contate o administrador do sistema
-- Relate o problema descrevendo:
-  - O que estava fazendo
-  - Qual erro ocorreu
-  - Quando o problema começou
 
 ---
 
