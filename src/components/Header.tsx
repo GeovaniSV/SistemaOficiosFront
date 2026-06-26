@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Menu } from "lucide-react";
+import { Menu, User } from "lucide-react";
 
 export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const navigate = useNavigate();
@@ -11,10 +11,13 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    setData({
-      name: user.name,
-      position: user.position_id,
-    });
+    const position = user.position?.name ? user.position.name : "Sem cargo";
+    if (user) {
+      setData({
+        name: user.name,
+        position: position,
+      });
+    }
   }, []);
 
   return (
@@ -33,11 +36,12 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
           className="flex items-center space-x-3 border-l border-slate-200 pl-4 ml-2 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors"
           onClick={() => navigate("/perfil")}
         >
-          <img
+          {/* <img
             className="h-8 w-8 rounded-full object-cover border border-slate-200"
             src="https://picsum.photos/seed/user/100/100"
             alt="User avatar"
-          />
+          /> */}
+          <User className="h-8 w-8 rounded-full object-cover border border-slate-200 text-emerald-500" />
           <div className="hidden sm:block">
             <p className="text-sm font-medium text-slate-700">{data.name}</p>
             <p className="text-xs text-slate-500">{data.position}</p>

@@ -1,12 +1,19 @@
-import React from "react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Oficios } from "../types/oficio";
-import { formatOficioNumber } from "../utils/formatters";
+import { PaginatedOficiosType, OficioType } from "../types/oficio";
+
 import { STATUS_DOT_STYLES } from "../constants/oficios";
 import { StatusBadge } from "./ui/StatusBadge";
 import { Button } from "./ui/Button";
+
+const hashStatus: Record<string, string> = {
+  APPROVED: "Aprovado",
+  REJECTED: "Rejeitado",
+  PENDING: "Pendente",
+  DRAFT: "Rascunho",
+  SENT: "Enviado",
+};
 
 export function OficiosList({
   paginatedOficios,
@@ -16,7 +23,7 @@ export function OficiosList({
   currentPage,
   setCurrentPage,
   totalPages,
-}: Oficios) {
+}: PaginatedOficiosType) {
   return (
     <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
       <div className="overflow-x-auto">
@@ -51,11 +58,11 @@ export function OficiosList({
                     );
                     setMenuPosition({ x: e.clientX, y: e.clientY });
                   }}
-                  className={`hover:bg-slate-50 transition-colors cursor-pointer group ${activeMenuId === oficio.id ? "bg-slate-50" : ""}`}
+                  className={` transition-colors cursor-pointer group ${activeMenuId === oficio.id ? "bg-slate-50" : ""} ${oficio.status === "APPROVED" ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100" : "hover:bg-slate-50"}`}
                 >
                   <td className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap items-center">
                     <div className="flex items-center  justify-center ">
-                      {oficio.id ?? "-"}
+                      {oficio.number ?? "-"}
                     </div>
                   </td>
                   <td>{oficio.subject}</td>
@@ -75,7 +82,10 @@ export function OficiosList({
                     </div>
                   </td>
                   <td className="px-6 py-4 hidden sm:table-cell">
-                    <StatusBadge status={oficio.status} />
+                    <StatusBadge
+                      status={hashStatus[oficio.status]}
+                      color={oficio.status}
+                    />
                   </td>
                 </tr>
               ))

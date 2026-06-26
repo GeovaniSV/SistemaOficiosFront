@@ -10,12 +10,13 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
-import { useAppStore } from "../store/useAppStore";
+import { useRoles, useAddRole, useUpdateRole } from "../hooks/queries/useRoles";
 
 const defaultPermissions = {
   oficios: { ver: false, criar: false, editar: false, excluir: false },
@@ -25,9 +26,34 @@ const defaultPermissions = {
   configuracoes: { acessar: false },
 };
 
+function permissionsToFlat(permissions: typeof defaultPermissions): string[] {
+  const flat: string[] = [];
+  Object.entries(permissions).forEach(([module, actions]) => {
+    Object.entries(actions as Record<string, boolean>).forEach(
+      ([action, checked]) => {
+        if (checked) flat.push(`${module}.${action}`);
+      },
+    );
+  });
+  return flat;
+}
+
+function flatToPermissions(flat: string[]) {
+  const result = JSON.parse(JSON.stringify(defaultPermissions));
+  flat.forEach((permission) => {
+    const [module, action] = permission.split(".");
+    if (result[module] && action in result[module]) {
+      result[module][action] = true;
+    }
+  });
+  return result;
+}
+
 export default function Papeis() {
   const navigate = useNavigate();
-  const { papeis, addPapel, updatePapel } = useAppStore();
+  const { data: papeis = [], isLoading, isError, error } = useRoles();
+  const addRole = useAddRole();
+  const updateRole = useUpdateRole();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -44,7 +70,7 @@ export default function Papeis() {
   const itemsPerPage = 10;
 
   const filteredRoles = papeis.filter(
-    (role) =>
+    (role: any) =>
       role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       role.description.toLowerCase().includes(searchTerm.toLowerCase()),
   );
@@ -73,29 +99,49 @@ export default function Papeis() {
   };
 
   const handleEditRole = () => {
-    const role = papeis.find((r) => r.id === activeMenuId);
+    const role = papeis.find((r: any) => r.id === activeMenuId);
     if (role) {
-      setFormData(JSON.parse(JSON.stringify(role)));
+      setFormData({
+        id: role.id,
+        name: role.name,
+        description: role.description,
+        status: role.status,
+        permissions: flatToPermissions(role.permissions),
+      });
       setIsExistingRole(true);
       setView("form");
       setActiveMenuId(null);
     }
   };
 
-  const handleSaveRole = (e: React.FormEvent) => {
+  const handleSaveRole = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isExistingRole) {
-      updatePapel(formData.id, formData);
-    } else {
-      const newRole = { ...formData };
-      addPapel(newRole);
-      const createdRole = { ...newRole, id: Date.now() };
-      setFormData(createdRole);
-      setIsExistingRole(true);
-    }
+    const payload = {
+      name: formData.name,
+      description: formData.description,
+      status: formData.status,
+      permissions: permissionsToFlat(formData.permissions),
+    };
 
-    setToastMessage("Papel salvo com sucesso!");
+    try {
+      if (isExistingRole) {
+        await updateRole.mutateAsync({ id: formData.id, ...payload });
+      } else {
+        const response = await addRole.mutateAsync(payload);
+        setFormData({ ...formData, id: response.data.id });
+        setIsExistingRole(true);
+      }
+      setToastMessage("Papel salvo com sucesso!");
+    } catch (error: any) {
+      const errors = error?.response?.data?.errors;
+      const firstError = errors && Object.values(errors)[0];
+      const message =
+        (Array.isArray(firstError) ? firstError[0] : firstError) ||
+        error?.response?.data?.message ||
+        "Erro ao salvar papel.";
+      setToastMessage(message);
+    }
     setTimeout(() => setToastMessage(""), 3000);
   };
 
@@ -169,31 +215,58 @@ export default function Papeis() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
-                      {paginatedRoles.map((role) => (
-                        <tr
-                          key={role.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveMenuId(
-                              activeMenuId === role.id ? null : role.id,
-                            );
-                            setMenuPosition({ x: e.clientX, y: e.clientY });
-                          }}
-                          className={`hover:bg-slate-50 transition-colors cursor-pointer group ${activeMenuId === role.id ? "bg-slate-50" : ""}`}
-                        >
-                          <td className="px-6 py-4">
-                            <div className="flex flex-col">
-                              <span className="font-medium text-slate-900">
-                                {role.name}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-slate-600">
-                            {role.description}
+                      {!isLoading &&
+                        !isError &&
+                        paginatedRoles.map((role) => (
+                          <tr
+                            key={role.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveMenuId(
+                                activeMenuId === role.id ? null : role.id,
+                              );
+                              setMenuPosition({ x: e.clientX, y: e.clientY });
+                            }}
+                            className={`hover:bg-slate-50 transition-colors cursor-pointer group ${activeMenuId === role.id ? "bg-slate-50" : ""}`}
+                          >
+                            <td className="px-6 py-4">
+                              <div className="flex flex-col">
+                                <span className="font-medium text-slate-900">
+                                  {role.name}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-slate-600">
+                              {role.description}
+                            </td>
+                          </tr>
+                        ))}
+                      {isLoading && (
+                        <tr>
+                          <td
+                            colSpan={2}
+                            className="px-6 py-8 text-center text-slate-500"
+                          >
+                            Carregando papéis...
                           </td>
                         </tr>
-                      ))}
-                      {filteredRoles.length === 0 && (
+                      )}
+                      {isError && (
+                        <tr>
+                          <td
+                            colSpan={2}
+                            className="px-6 py-8 text-center text-rose-500"
+                          >
+                            <p className="inline-flex items-center gap-2">
+                              <AlertTriangle size={18} />
+                              {(error as any)?.response?.status === 403
+                                ? "Você não tem permissão para visualizar os papéis."
+                                : "Erro ao carregar papéis da API."}
+                            </p>
+                          </td>
+                        </tr>
+                      )}
+                      {!isLoading && !isError && filteredRoles.length === 0 && (
                         <tr>
                           <td
                             colSpan={2}
@@ -719,7 +792,8 @@ export default function Papeis() {
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                      disabled={addRole.isPending || updateRole.isPending}
+                      className="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Save className="w-4 h-4 mr-2" />
                       Salvar Papel

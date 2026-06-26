@@ -17,10 +17,11 @@ import {
 import { Input } from "@/src/components/ui/Input";
 import { ContatoResponsibleModal } from "@/src/components/ContatoResponsibleModal";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import { AxiosError } from "axios";
 
 function ContatoCreatePage() {
   const navigate = useNavigate();
-  const [toastMessage, setToastMessage] = useState("");
   const [formData, setFormData] = useState<ContatoType>({
     id: 0,
     name: "",
@@ -36,32 +37,92 @@ function ContatoCreatePage() {
     },
     responsibles: [],
     active: true,
+    is_active: true,
   });
 
   const addContato = useAddContato();
 
-  const handleSaveContact = (e: React.FormEvent) => {
+  const handleSaveContact = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.name.trim()) {
-      setToastMessage("O campo Nome Completo é obrigatório.");
-      setTimeout(() => setToastMessage(""), 3000);
+    if (!formData.doc) {
+      formData.type === "PF"
+        ? toast.error("Necessário preencher o campo CPF.")
+        : toast.error("Necessário preencher o campo CNPJ.");
+
+      return;
+    }
+
+    if (!formData.name || !formData.name) {
+      formData.type === "PF"
+        ? toast.error("Necessário preencher o campo Nome Completo.")
+        : toast.error("Necessário preencher o campo Razão Social.");
+      return;
+    }
+
+    if (!formData.address.cep) {
+      toast.error("Necessário preencher o campo CEP.");
+      return;
+    }
+
+    if (!formData.address.logradouro) {
+      toast.error("Necessário preencher o campo Logradouro.");
+      return;
+    }
+
+    if (!formData.address.numero) {
+      toast.error("Necessário preencher o campo Número.");
+      return;
+    }
+
+    if (!formData.address.bairro) {
+      toast.error("Necessário preencher o campo Bairro.");
+      return;
+    }
+
+    if (!formData.address.cidade) {
+      toast.error("Necessário preencher o campo Cidade.");
+      return;
+    }
+
+    if (!formData.address.estado) {
+      toast.error("Necessário preencher o campo Estado.");
       return;
     }
 
     if (!formData.responsibles || formData.responsibles.length === 0) {
-      setToastMessage("É necessário adicionar pelo menos um responsável.");
-      setTimeout(() => setToastMessage(""), 3000);
+      toast.error("Necessário adicionar pelo menos um responsável.");
       return;
     }
 
-    addContato.mutate(formData);
-    setToastMessage("Contato criado com sucesso!");
-    navigate("/contatos");
-
-    setTimeout(() => {
-      setToastMessage("");
-    }, 2000);
+    try {
+      await addContato.mutateAsync(formData);
+      toast.success("Contato criado com sucesso!");
+      // navigate("/contatos");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.response?.data.errors) {
+          const httpErrorHash: Record<string, string> = {
+            "The doc has already been taken.":
+              formData.type === "PJ"
+                ? "CNPJ já registrado"
+                : "CPF já registrado",
+            "The address.cep field must be 8 characters.":
+              "Informe um CEP válido",
+            "CNPJ inválido.": "Informe um CNPJ válido",
+            "The responsibles.0.email field must be a valid email address.":
+              "Informe um email válido para o responsável",
+          };
+          for (const [errorKey, errors] of Object.entries(
+            error.response.data.errors as [string, string[]][],
+          )) {
+            errors.forEach((err: any) => {
+              toast.error(`${errorKey}: ${httpErrorHash[err]}`);
+            });
+          }
+        }
+      }
+    }
   };
 
   const [isResponsibleModalOpen, setIsResponsibleModalOpen] = useState(false);
@@ -99,16 +160,16 @@ function ContatoCreatePage() {
   const onSaveResponsibleModal = (responsible: any) => {
     if (
       !responsible.name ||
-      !responsible.name.trim() ||
+      !responsible.name ||
       !responsible.treatment ||
-      !responsible.treatment.trim() ||
+      !responsible.treatment ||
       !responsible.position ||
-      !responsible.position.trim()
+      !responsible.position
     ) {
-      setToastMessage(
+      toast.error(
         "Os campos Nome, Tratamento e Cargo/Posição são obrigatórios.",
       );
-      setTimeout(() => setToastMessage(""), 3000);
+
       return;
     }
 
@@ -125,8 +186,7 @@ function ContatoCreatePage() {
 
     setFormData({ ...formData, responsibles: newResponsibles });
     setIsResponsibleModalOpen(false);
-    setToastMessage("Responsável salvo com sucesso!");
-    setTimeout(() => setToastMessage(""), 3000);
+    toast.success("Responsável salvo com sucesso!");
   };
 
   return (
@@ -508,12 +568,7 @@ function ContatoCreatePage() {
         />
 
         {/* Toast Notification */}
-        {toastMessage && (
-          <div className="fixed bottom-4 right-4 z-50 flex items-center bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg animate-in slide-in-from-bottom-5">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 mr-3" />
-            <p className="text-sm font-medium">{toastMessage}</p>
-          </div>
-        )}
+        <ToastContainer />
       </div>
     </>
   );

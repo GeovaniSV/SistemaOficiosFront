@@ -1,7 +1,7 @@
-import { ChangeEventHandler, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useContatos } from "@/src/hooks/queries/useContatos";
-import { useAddOficio, useUpdateOficio } from "@/src/hooks/queries/useOficios";
+import { useUpdateOficio, useOficio } from "@/src/hooks/queries/useOficios";
 import { ArrowLeft, Save, Send, Info, CheckCircle2 } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
 import { Input } from "@/src/components/ui/Input";
@@ -11,7 +11,7 @@ import { OficioEditor } from "@/src/components/OficioEditor";
 import { NovoOficioPreviewModal } from "@/src/components/NovoOficioPreviewModal";
 import { NovoOficioTemplateModal } from "@/src/components/NovoOficioTemplateModal";
 import { toast, ToastContainer } from "react-toastify";
-import { AxiosError } from "axios";
+import { AxiosError, isAxiosError } from "axios";
 
 const PriorityHash: Record<string, string> = {
   normal: "MEDIUM",
@@ -20,8 +20,22 @@ const PriorityHash: Record<string, string> = {
   urgente: "URGENT",
 };
 
-function CreateOficios() {
+const ReceivedPriorityHash: Record<string, string> = {
+  MEDIUM: "normal",
+  LOW: "baixa",
+  HIGH: "alta",
+  URGENT: "urgente",
+};
+
+function EditOficios() {
   const navigate = useNavigate();
+  const { id: oficioParamId } = useParams();
+
+  const { data: contatos = [], isLoading } = useContatos();
+  const { data: oficio, isLoading: oficioLoading } = useOficio(
+    Number(oficioParamId),
+  );
+
   const [destinatarioSearch, setDestinatarioSearch] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedDestinatarios, setSelectedDestinatarios] = useState<any[]>([]);
@@ -29,87 +43,115 @@ function CreateOficios() {
   const [expandedRecipientId, setExpandedRecipientId] = useState<number | null>(
     null,
   );
+
   const [content, setContent] = useState("");
   const [formData, setFormData] = useState({
     subject: "",
-    priority: "normal",
+    priority: "",
     content: "",
     destination_contact_id: "",
   });
 
-  const addOficio = useAddOficio();
+  const updateOficio = useUpdateOficio();
 
-  const [rejectionInfo, setRejectionInfo] = useState<any>(null);
-
+  const [rejectionInfo, setRejectionInfo] = useState<any[]>();
+  const [hasRejection, setHasRejection] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [templateSearch, setTemplateSearch] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
 
-  const { data: contatos = [], isLoading } = useContatos();
+  useEffect(() => {
+    if (!oficio) return;
 
-  const handleSubmit = (status: string) => {
-    try {
-      const destinationContactId = selectedDestinatarios[0]?.id;
+    setContent(oficio.content);
 
-      if (!destinationContactId) {
-        toast.error("Por favor, selecione pelo menos um destinatário.");
-        return;
-      }
-      if (selectedResponsibles.length === 0) {
-        toast.error("Por favor, selecione pelo menos um responsável.");
-        return;
-      }
-      if (!formData.subject) {
-        toast.error("Por favor, preencha o assunto.");
-        return;
-      }
-      if (!content.trim()) {
-        toast.error("Por favor, preencha o conteúdo do ofício.");
-        return;
-      }
+    setFormData({
+      subject: oficio.subject,
+      priority: ReceivedPriorityHash[oficio.priority],
+      content: oficio.content,
+      destination_contact_id: "",
+    });
 
-      const payload = {
-        ...formData,
-        content: content,
-        responsibles: selectedResponsibles.map((res) => res.id),
-        destination_contact_id: destinationContactId,
-        priority: PriorityHash[formData.priority],
-        department: selectedResponsibles[0]?.department ?? null,
-        submit: status,
-      };
+    setSelectedDestinatarios([oficio.destination_contact]);
+    setSelectedResponsibles(oficio.responsibles);
+    setRejectionInfo(oficio.rejection_infos?.REJECTED);
+    if (rejectionInfo) {
+      setHasRejection(true);
+    }
+  }, [oficio]);
 
-      addOficio.mutate(payload, {
-        onSuccess: () => {
-          toast.success("Ofício submetido à aprovação com sucesso!");
-          setTimeout(() => navigate("/oficios"), 2000);
-        },
-        onError: () => {
-          toast.error("Erro ao salvar o ofício. Tente novamente.");
-        },
-      });
-    } catch (error) {
-      if (error) {
-        if (error instanceof AxiosError) {
-          const errorHash: Record<number, string> = {
-            403: "Você não tem permissão para realizar essa ação",
-          };
-          const status = error.response?.status;
-          toast.error(errorHash[status!]);
+  if (oficioLoading || !oficio) return <div>Carregando...</div>;
+
+  const handleSubmit = (submit: boolean) => {
+    selectedResponsibles.map(async (res: any) => {
+      try {
+        const payload = {
+          ...formData,
+          content: content,
+          responsibles: [res.id],
+          destination_contact_id: selectedDestinatarios[0]?.id,
+          priority: PriorityHash[formData.priority],
+          department: res.department,
+          submit: submit,
+        };
+
+        if (!payload.destination_contact_id) {
+          toast.error("Por favor, selecione pelo menos um destinatário.");
+          return;
+        }
+        if (!payload.responsibles) {
+          toast.error("Por favor, selecione pelo menos um responsável.");
+          return;
+        }
+        if (!payload.subject) {
+          toast.error("Por favor, preencha o assunto.");
+          return;
+        }
+        if (!payload.content) {
+          toast.error("Por favor, preencha o conteúdo do ofício.");
+          return;
+        }
+
+        if (!payload.department) {
+          toast.error("Por favor, selecione um contato do destinatário.");
+          return;
+        }
+
+        const response = await updateOficio.mutateAsync({
+          id: Number(oficioParamId),
+          oficio: payload,
+        });
+
+        toast.success("Ofício submetido à aprovação com sucesso!");
+        setTimeout(() => {
+          navigate("/oficios");
+        }, 2000);
+      } catch (error) {
+        if (error) {
+          if (error instanceof AxiosError) {
+            const errorHash: Record<number, string> = {
+              403: "Você não tem permissão para realizar essa ação",
+            };
+            const status = error.response?.status;
+            toast.error(errorHash[status!]);
+          }
         }
       }
-    }
+    });
   };
 
   return (
     <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
+      <ToastContainer />
       <div className="max-w-4xl mx-auto">
         {/* Header Section */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
             <button
               onClick={() => {
-                localStorage.removeItem("editOficioRejectionInfo");
                 navigate("/oficios");
               }}
               className="mr-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -118,7 +160,7 @@ function CreateOficios() {
             </button>
             <div>
               <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                Criar Novo Ofício
+                Editar Oficio
               </h1>
               <p className="text-sm text-slate-500 mt-1">
                 Preencha os dados abaixo para redigir o documento.
@@ -137,15 +179,14 @@ function CreateOficios() {
             <Button
               variant="outline"
               icon={<Save className="w-4 h-4" />}
-              onClick={() => handleSubmit("false")}
-              disabled={addOficio.isPending}
+              onClick={() => handleSubmit(false)}
             >
               Salvar
             </Button>
             <Button
-              onClick={() => handleSubmit("true")}
+              onClick={() => handleSubmit(true)}
+              className="w-full justify-center"
               icon={<Send className="w-4 h-4" />}
-              disabled={addOficio.isPending}
             >
               Submeter
             </Button>
@@ -156,7 +197,7 @@ function CreateOficios() {
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
           <div className="p-6 sm:p-8 space-y-8">
             {/* Rejection Info Alert */}
-            {rejectionInfo && (
+            {hasRejection && (
               <div className="bg-orange-50 border border-orange-200 rounded-xl p-5 mb-6">
                 <div className="flex items-start">
                   <Info className="w-5 h-5 text-orange-500 mt-0.5 mr-3 flex-shrink-0" />
@@ -164,33 +205,24 @@ function CreateOficios() {
                     <h3 className="text-sm font-bold text-orange-800 mb-1">
                       Ofício Devolvido para Ajustes
                     </h3>
-                    <p className="text-sm text-orange-700 mb-3">
-                      Este ofício foi devolvido por{" "}
-                      <strong>{rejectionInfo.author}</strong> em{" "}
-                      {rejectionInfo.date}. Por favor, faça as correções
-                      necessárias e submeta novamente.
-                    </p>
+                    {/* <p className="text-sm text-orange-700 mb-3">
+                        Este ofício foi devolvido por{" "}
+                        <strong>{rejectionInfo!.author}</strong> em{" "}
+                        {rejectionInfo!.date}. Por favor, faça as correções
+                        necessárias e submeta novamente.
+                      </p> */}
                     <div className="bg-white/60 rounded-lg p-3 border border-orange-100">
                       <p className="text-xs font-semibold text-orange-800 uppercase tracking-wider mb-1">
                         Motivo da Devolução:
                       </p>
                       <p className="text-sm text-orange-900 whitespace-pre-wrap">
-                        {rejectionInfo.reason}
+                        {/* {rejectionInfo.reason} */}
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
             )}
-
-            {/* Info Alert */}
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start">
-              <Info className="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
-              <p className="text-sm text-blue-800">
-                O número do ofício será gerado automaticamente após sua
-                aprovação.
-              </p>
-            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 md:col-span-2">
@@ -259,10 +291,9 @@ function CreateOficios() {
           {/* Mobile Actions (Visible only on small screens) */}
           <div className="p-6 bg-slate-50 border-t border-slate-200 sm:hidden flex flex-col space-y-3">
             <Button
-              onClick={() => handleSubmit("PENDING")}
+              onClick={() => handleSubmit(true)}
               className="w-full justify-center"
               icon={<Send className="w-4 h-4" />}
-              disabled={addOficio.isPending}
             >
               Submeter
             </Button>
@@ -270,8 +301,6 @@ function CreateOficios() {
               variant="outline"
               className="w-full justify-center"
               icon={<Save className="w-4 h-4" />}
-              onClick={() => handleSubmit("DRAFT")}
-              disabled={addOficio.isPending}
             >
               Salvar
             </Button>
@@ -307,9 +336,22 @@ function CreateOficios() {
       />
 
       {/* Toast Notification */}
-      <ToastContainer />
+      {toastMessage && (
+        <div
+          className={`fixed bottom-4 right-4 z-50 flex items-center text-white px-4 py-3 rounded-xl shadow-lg animate-in slide-in-from-bottom-5 ${
+            toastType === "success" ? "bg-slate-900" : "bg-rose-600"
+          }`}
+        >
+          {toastType === "success" ? (
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 mr-3" />
+          ) : (
+            <Info className="w-5 h-5 text-white mr-3" />
+          )}
+          <p className="text-sm font-medium">{toastMessage}</p>
+        </div>
+      )}
     </main>
   );
 }
 
-export default CreateOficios;
+export default EditOficios;

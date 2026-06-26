@@ -10,7 +10,9 @@ import {
   ChevronDown,
   ChevronRight,
   UserPlus,
+  Mail,
 } from "lucide-react";
+import { useLogout } from "../hooks/queries/useUsers";
 
 const navigation = [
   { name: "Ofícios", id: "oficios", icon: FileText },
@@ -26,6 +28,7 @@ const navigation = [
       { name: "Template de Ofício", id: "templates" },
     ],
   },
+  { name: "Caixa de Saída", id: "caixa-saida", icon: Mail },
   { name: "Configurações", id: "configuracoes", icon: Settings },
 ];
 
@@ -46,6 +49,12 @@ export default function Sidebar({
       currentView === "papeis" ||
       currentView === "cargos",
   });
+  const logout = useLogout();
+
+  const handleLogout = () => {
+    logout.mutate();
+    navigate("/login");
+  };
 
   const toggleMenu = (id: string) => {
     setExpandedMenus((prev) => ({
@@ -177,7 +186,7 @@ export default function Sidebar({
 
         <div className="p-4 border-t border-slate-200">
           <button
-            onClick={() => navigate("/login")}
+            onClick={handleLogout}
             className="flex items-center w-full px-3 py-2.5 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 hover:text-slate-900 transition-all duration-200 cursor-pointer group"
           >
             <LogOut className="mr-3 h-[18px] w-[18px] text-slate-400 group-hover:text-slate-600 transition-colors" />

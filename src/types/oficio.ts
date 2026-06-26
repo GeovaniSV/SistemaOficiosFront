@@ -1,12 +1,3 @@
-export interface RejectionInfo {
-  reason: string;
-  date: string;
-  author: string;
-  type: string;
-}
-
-export type OficioType = "interno" | "recebido";
-
 export interface Destinatario {
   id: string;
   name: string;
@@ -15,9 +6,60 @@ export interface Destinatario {
   type: string;
 }
 
-export interface Oficios {
+export interface OficioType {
+  id: string | null;
+  number: string;
+  author: {
+    id: number;
+    cpf: string;
+    email: string;
+    name: string;
+    is_active: boolean;
+    is_dev: boolean;
+    position_id: number;
+  };
+  author_id: number;
+  content: string;
+  department: string;
+  destination_contact: {
+    address_id: number;
+    doc: string;
+    id: number;
+    name: string;
+    type: string;
+  }[];
+  destination_contact_id: number;
+  priority: string;
+  responsibles: {
+    id: number;
+    contact_id: number;
+    department: string;
+    email: string;
+    name: string;
+    position: string;
+    treatment: string;
+  }[];
+  status: string;
+  subject: string;
+  created_at: string;
+  rejection_infos?: {
+    REJECTED?: RejectionType[];
+  };
+  messages: {
+    created_at: string;
+    id: number;
+    oficio_id: number;
+    responsible_id: number;
+    sent_at: string;
+    status: string;
+    updated_at: string;
+  }[];
+}
+
+export interface PaginatedOficiosType {
   paginatedOficios: {
     id: string | null;
+    number: number;
     author: {
       id: number;
       cpf: string;
@@ -39,6 +81,7 @@ export interface Oficios {
     };
     priority: string;
     responsible: {
+      id: number;
       contact_id: number;
       department: string;
       email: string;
@@ -56,4 +99,21 @@ export interface Oficios {
   currentPage: number;
   setCurrentPage: (page: number) => void;
   totalPages: number;
+}
+
+export interface RejectionType {
+  author: {
+    id: number;
+    name: string;
+    email: string;
+    cpf: string;
+    position_id: number;
+  };
+  author_id: number;
+  created_at: string;
+  id: number;
+  oficio_id: number;
+  reason: string;
+  type: string;
+  updated_at: string;
 }

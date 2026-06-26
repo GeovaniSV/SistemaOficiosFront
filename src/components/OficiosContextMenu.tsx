@@ -1,17 +1,24 @@
 import React, { SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, Info, Download, Edit2, FileCheck } from "lucide-react";
-import { Oficio } from "../types/oficio";
+import { Eye, Info, Download, Edit2, FileCheck, Mail } from "lucide-react";
+import { OficioType } from "../types/oficio";
+import {
+  useOficio,
+  useReviewOficio,
+  useSendOficio,
+} from "../hooks/queries/useOficios";
 
 interface OficiosContextMenuProps {
   activeMenuId: string | null;
   menuPosition: { x: number; y: number } | null;
   setActiveMenuId: (id: string | null) => void;
-  getOficioById: (id: string) => Oficio | undefined;
-  setPreviewOficio: (oficio: Oficio) => void;
-  setInfoOficio: (oficio: Oficio) => void;
-  setEvaluatingOficio: (oficio: Oficio) => void;
+  getOficioById: (id: string) => OficioType | undefined;
+  setPreviewOficio: (oficio: OficioType) => void;
+  setInfoOficio: (oficio: OficioType) => void;
+  setEvaluatingOficio: (oficio: OficioType) => void;
   setToastMessage: (msg: string) => void;
+  setIsDownloadModalOpen: (value: boolean) => void;
+  setDownloadOficio: (oficio: OficioType) => void;
 }
 
 export function OficiosContextMenu({
@@ -23,8 +30,12 @@ export function OficiosContextMenu({
   setInfoOficio,
   setEvaluatingOficio,
   setToastMessage,
+  setIsDownloadModalOpen,
+  setDownloadOficio,
 }: OficiosContextMenuProps) {
   const navigate = useNavigate();
+  const reviewOficio = useReviewOficio();
+  const sendOficio = useSendOficio();
   if (!activeMenuId || !menuPosition) return null;
 
   const activeOficio = getOficioById(activeMenuId);
@@ -34,8 +45,13 @@ export function OficiosContextMenu({
   const showEditar =
     activeOficio.status === "PENDING" || activeOficio.status === "DRAFT";
   const showAvaliar = activeOficio.status === "PENDING";
-  const showDownload = activeOficio.status === "APROVED";
+  const showDownload = activeOficio.status === "SENT";
   const showInformacoes = activeOficio.status === "REJECTED";
+  const showEnviar = activeOficio.status === "APPROVED";
+
+  const handleSendEmail = () => {
+    sendOficio.mutate({ id: Number(activeOficio.id) });
+  };
 
   return (
     <>
@@ -46,7 +62,7 @@ export function OficiosContextMenu({
 
       {/* Desktop Context Menu */}
       <div
-        className="hidden sm:block fixed z-50 bg-white rounded-xl shadow-xl border border-slate-200 py-2 min-w-[180px] overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+        className="hidden sm:block fixed z-50 bg-white rounded-xl shadow-xl border border-slate-200 py-2 min-w-45 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
         style={{
           top: Math.min(menuPosition.y, window.innerHeight - 150),
           left: Math.min(menuPosition.x, window.innerWidth - 200),
@@ -80,9 +96,9 @@ export function OficiosContextMenu({
           {showDownload && (
             <button
               onClick={() => {
-                setToastMessage(
-                  `Download do PDF iniciado para o ofício ${activeOficio.id}`,
-                );
+                setDownloadOficio(activeOficio);
+                setIsDownloadModalOpen(true);
+
                 setTimeout(() => setToastMessage(""), 3000);
                 setActiveMenuId(null);
               }}
@@ -95,11 +111,11 @@ export function OficiosContextMenu({
           {showEditar && (
             <button
               onClick={() => {
-                localStorage.setItem("editOficioId", activeOficio.id);
-                if (activeOficio.rejectionInfo) {
+                localStorage.setItem("editOficioId", activeOficio.id!);
+                if (activeOficio.rejection_infos) {
                   localStorage.setItem(
                     "editOficioRejectionInfo",
-                    JSON.stringify(activeOficio.rejectionInfo),
+                    JSON.stringify(activeOficio.rejection_infos),
                   );
                 } else {
                   localStorage.removeItem("editOficioRejectionInfo");
@@ -123,6 +139,19 @@ export function OficiosContextMenu({
             >
               <FileCheck className="w-4 h-4 mr-3" />
               Avaliar
+            </button>
+          )}
+
+          {showEnviar && (
+            <button
+              onClick={() => {
+                handleSendEmail();
+                setActiveMenuId(null);
+              }}
+              className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors w-full text-left"
+            >
+              <Mail className="w-4 h-4 mr-3" />
+              Enviar Email
             </button>
           )}
         </div>
@@ -184,10 +213,10 @@ export function OficiosContextMenu({
             {showEditar && (
               <button
                 onClick={() => {
-                  if (activeOficio.rejectionInfo) {
+                  if (activeOficio.rejection_infos) {
                     localStorage.setItem(
                       "editOficioRejectionInfo",
-                      JSON.stringify(activeOficio.rejectionInfo),
+                      JSON.stringify(activeOficio.rejection_infos),
                     );
                   } else {
                     localStorage.removeItem("editOficioRejectionInfo");

@@ -1,4 +1,5 @@
 export type ContatoType = {
+  active: boolean;
   id?: number;
   name: string;
   type: string;
@@ -19,5 +20,5 @@ export type ContatoType = {
     department: string;
     treatment?: string;
   }[];
-  active: boolean;
+  is_active: boolean;
 };

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router";
 import {
   Search,
   Filter,
@@ -9,8 +8,10 @@ import {
   ArrowLeft,
   Save,
   Edit,
+  Lock,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
@@ -18,14 +19,30 @@ import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { Badge } from "./ui/Badge";
 import { Select } from "./ui/Select";
-import { useAppStore } from "../store/useAppStore";
+import {
+  useUsuarios,
+  useAddUsuario,
+  useUpdateUsuario,
+  useDeleteUsuario,
+  useRestoreUsuario,
+} from "../hooks/queries/useUsers";
+import { useCargos } from "../hooks/queries/useCargos";
+import { useRoles } from "../hooks/queries/useRoles";
+import { toast, ToastContainer } from "react-toastify";
+import { AxiosError } from "axios";
 
 export default function Usuarios() {
-  const navigate = useNavigate();
-  const { usuarios, addUsuario, updateUsuario } = useAppStore();
+  const { data: usuarios = [], isLoading, isError, error } = useUsuarios();
+  const { data: cargos = [] } = useCargos();
+  const { data: roles = [] } = useRoles();
+  const addUsuario = useAddUsuario();
+  const updateUsuario = useUpdateUsuario();
+  const deleteUsuario = useDeleteUsuario();
+  const restoreUsuario = useRestoreUsuario();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
+  const [inError, setInError] = useState("");
 
   const [view, setView] = useState<"list" | "form">("list");
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
@@ -35,11 +52,12 @@ export default function Usuarios() {
   } | null>(null);
   const [formData, setFormData] = useState<any>(null);
   const [isExistingUser, setIsExistingUser] = useState(false);
+  const [initialStatus, setInitialStatus] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const filteredUsers = usuarios.filter((user) => {
+  const filteredUsers = usuarios.filter((user: any) => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -63,61 +81,113 @@ export default function Usuarios() {
     setFormData({
       name: "",
       email: "",
+      password: "",
       cpf: "",
-      role: "Usuário",
-      cargo: "",
+      role: "",
+      position_id: "",
       status: "Ativo",
     });
     setIsExistingUser(false);
+    setInitialStatus(null);
     setView("form");
     setActiveMenuId(null);
   };
 
   const handleEditUser = () => {
-    const user = usuarios.find((u) => u.id === activeMenuId);
+    const user = usuarios.find((u: any) => u.id === activeMenuId);
     if (user) {
-      setFormData({ ...user });
+      setFormData({ ...user, password: "" });
       setIsExistingUser(true);
+      setInitialStatus(user.status);
       setView("form");
       setActiveMenuId(null);
     }
   };
 
-  const handleSaveUser = (e: React.FormEvent) => {
+  const handleSaveUser = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isExistingUser) {
-      updateUsuario(formData.id, formData);
-    } else {
-      const newUser = { ...formData, lastLogin: "Nunca" };
-      addUsuario(newUser);
+    try {
+      if (isExistingUser) {
+        await updateUsuario.mutateAsync({
+          id: formData.id,
+          name: formData.name,
+          email: formData.email,
+          cpf: formData.cpf || undefined,
+          role: formData.role || undefined,
+          position_id: formData.position_id
+            ? Number(formData.position_id)
+            : undefined,
+        });
 
-      // we need the saved user's id to keep editing it, we simulate what we'd get back
-      const createdUser = { ...newUser, id: Date.now() };
-      setFormData(createdUser);
-      setIsExistingUser(true); // Lock CPF after saving
+        // is_active não é atualizável via PUT /api/users/{id}, a API exige
+        // os endpoints dedicados de delete (soft) e restore para isso.
+        if (formData.status !== initialStatus) {
+          if (formData.status === "Ativo") {
+            await restoreUsuario.mutateAsync(formData.id);
+          } else {
+            await deleteUsuario.mutateAsync(formData.id);
+          }
+          setInitialStatus(formData.status);
+        }
+        setView("list");
+      } else {
+        const response = await addUsuario.mutateAsync({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          cpf: formData.cpf || undefined,
+          role: formData.role || undefined,
+          position_id: formData.position_id
+            ? Number(formData.position_id)
+            : undefined,
+        });
+
+        const created = response.data;
+        setFormData({ ...formData, id: created.id, password: "" });
+        setIsExistingUser(true); // Lock CPF after saving
+        setInitialStatus("Ativo");
+      }
+
+      setView("list");
+      setToastMessage("Usuário salvo com sucesso!");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.response?.data.errors) {
+          const httpErrorHash: Record<string, string> = {
+            "The email has already been taken.": "Email já cadastrado",
+            "The cpf field format is invalid.": "Informe um CPF válido",
+          };
+          for (const [errorKey, errors] of Object.entries(
+            error.response.data.errors as [string, string[]][],
+          )) {
+            console.log(errorKey, errors);
+            errors.forEach((err: any) => {
+              toast.error(`${errorKey}: ${httpErrorHash[err]}`);
+            });
+          }
+        }
+        console.log(error.response?.data);
+        if (
+          error.response?.data.exception ===
+          "Illuminate\\Database\\UniqueConstraintViolationException"
+        ) {
+          toast.error("CPF já cadastrado");
+        }
+      }
     }
-
-    setToastMessage("Usuário salvo com sucesso!");
-    setTimeout(() => setToastMessage(""), 3000);
   };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex">
       <Sidebar
-        currentView="usuarios"
-        onNavigate={(view) => navigate(`/${view}`)}
-        onLogout={() => navigate("/login")}
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
       />
 
       <div className="flex-1 md:pl-64 flex flex-col min-h-screen w-full">
-        <Header
-          onMenuClick={() => setIsMobileMenuOpen(true)}
-          onNavigate={(view) => navigate(`/${view}`)}
-        />
-
+        <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
+        <ToastContainer />
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           {view === "list" && (
             <>
@@ -175,56 +245,83 @@ export default function Usuarios() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
-                      {paginatedUsers.map((user) => (
-                        <tr
-                          key={user.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveMenuId(
-                              activeMenuId === user.id ? null : user.id,
-                            );
-                            setMenuPosition({ x: e.clientX, y: e.clientY });
-                          }}
-                          className={`hover:bg-slate-50 transition-colors cursor-pointer group ${activeMenuId === user.id ? "bg-slate-50" : ""}`}
-                        >
-                          <td className="px-6 py-4">
-                            <div className="flex flex-col">
-                              <span className="font-medium text-slate-900">
-                                {user.name}
-                              </span>
-                              <span className="text-slate-500 text-xs mt-0.5">
-                                {user.email}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-slate-600">
-                            {user.cargo}
-                          </td>
-                          <td className="px-6 py-4 text-slate-600">
-                            {user.role}
-                          </td>
-                          <td className="px-6 py-4">
-                            <Badge
-                              variant={
-                                user.status === "Ativo"
-                                  ? "success"
-                                  : "secondary"
-                              }
-                            >
-                              {user.status === "Ativo" ? (
-                                <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                              ) : (
-                                <XCircle className="w-3.5 h-3.5 mr-1" />
-                              )}
-                              {user.status}
-                            </Badge>
-                          </td>
-                          <td className="px-6 py-4 text-slate-500">
-                            {user.lastLogin}
+                      {!isLoading &&
+                        !isError &&
+                        paginatedUsers.map((user: any) => (
+                          <tr
+                            key={user.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveMenuId(
+                                activeMenuId === user.id ? null : user.id,
+                              );
+                              setMenuPosition({ x: e.clientX, y: e.clientY });
+                            }}
+                            className={`hover:bg-slate-50 transition-colors cursor-pointer group ${activeMenuId === user.id ? "bg-slate-50" : ""}`}
+                          >
+                            <td className="px-6 py-4">
+                              <div className="flex flex-col">
+                                <span className="font-medium text-slate-900">
+                                  {user.name}
+                                </span>
+                                <span className="text-slate-500 text-xs mt-0.5">
+                                  {user.email}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-slate-600">
+                              {user.cargo || "-"}
+                            </td>
+                            <td className="px-6 py-4 text-slate-600">
+                              {user.role || "-"}
+                            </td>
+                            <td className="px-6 py-4">
+                              <Badge
+                                variant={
+                                  user.status === "Ativo"
+                                    ? "success"
+                                    : "secondary"
+                                }
+                              >
+                                {user.status === "Ativo" ? (
+                                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                                ) : (
+                                  <XCircle className="w-3.5 h-3.5 mr-1" />
+                                )}
+                                {user.status}
+                              </Badge>
+                            </td>
+                            <td className="px-6 py-4 text-slate-500">
+                              {user.lastLogin}
+                            </td>
+                          </tr>
+                        ))}
+                      {isLoading && (
+                        <tr>
+                          <td
+                            colSpan={5}
+                            className="px-6 py-8 text-center text-slate-500"
+                          >
+                            Carregando usuários...
                           </td>
                         </tr>
-                      ))}
-                      {filteredUsers.length === 0 && (
+                      )}
+                      {isError && (
+                        <tr>
+                          <td
+                            colSpan={5}
+                            className="px-6 py-8 text-center text-rose-500"
+                          >
+                            <p className="inline-flex items-center gap-2">
+                              <AlertTriangle size={18} />
+                              {(error as any)?.response?.status === 403
+                                ? "Você não tem permissão para visualizar os usuários."
+                                : "Erro ao carregar papéis da API."}
+                            </p>
+                          </td>
+                        </tr>
+                      )}
+                      {!isLoading && !isError && filteredUsers.length === 0 && (
                         <tr>
                           <td
                             colSpan={5}
@@ -358,6 +455,24 @@ export default function Usuarios() {
                       }
                     />
                   </div>
+                  {!isExistingUser && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                        Senha <span className="text-rose-500">*</span>
+                      </label>
+                      <Input
+                        type="password"
+                        required
+                        minLength={8}
+                        icon={<Lock className="w-4 h-4" />}
+                        value={formData.password || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, password: e.target.value })
+                        }
+                        placeholder="Mínimo 8 caracteres"
+                      />
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">
                       CPF <span className="text-rose-500">*</span>
@@ -380,7 +495,7 @@ export default function Usuarios() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">
-                      Papel <span className="text-rose-500">*</span>
+                      Papel
                     </label>
                     <Select
                       value={formData.role}
@@ -388,37 +503,46 @@ export default function Usuarios() {
                         setFormData({ ...formData, role: e.target.value })
                       }
                     >
-                      <option value="Administrador">Administrador</option>
-                      <option value="Gestor">Gestor</option>
-                      <option value="Usuário">Usuário</option>
+                      <option value="">Nenhum</option>
+                      {roles.map((role: any) => (
+                        <option key={role.id} value={role.name}>
+                          {role.name}
+                        </option>
+                      ))}
                     </Select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">
-                      Cargo <span className="text-rose-500">*</span>
+                      Cargo
                     </label>
                     <Select
-                      required
-                      value={formData.cargo}
+                      value={formData.position_id ?? ""}
                       onChange={(e) =>
-                        setFormData({ ...formData, cargo: e.target.value })
+                        setFormData({
+                          ...formData,
+                          position_id: e.target.value,
+                        })
                       }
                     >
-                      <option value="" disabled>
-                        Selecione um cargo
-                      </option>
-                      <option value="Presidente">Presidente</option>
-                      <option value="Vice-Presidente">Vice-Presidente</option>
-                      <option value="Secretário(a)">Secretário(a)</option>
-                      <option value="Coordenador(a)">Coordenador(a)</option>
-                      <option value="Presidente de Comissão">
-                        Presidente de Comissão
-                      </option>
+                      <option value="">Nenhum</option>
+                      {cargos.map((cargo: any) => (
+                        <option key={cargo.id} value={cargo.id}>
+                          {cargo.name}
+                        </option>
+                      ))}
                     </Select>
                   </div>
                 </div>
                 <div className="flex justify-end pt-4 border-t border-slate-200">
-                  <Button type="submit">
+                  <Button
+                    type="submit"
+                    isLoading={
+                      addUsuario.isPending ||
+                      updateUsuario.isPending ||
+                      deleteUsuario.isPending ||
+                      restoreUsuario.isPending
+                    }
+                  >
                     <Save className="w-4 h-4 mr-2" />
                     Salvar Usuário
                   </Button>
@@ -462,7 +586,7 @@ export default function Usuarios() {
             <div className="px-4 pb-6">
               {(() => {
                 const activeUser = usuarios.find(
-                  (u) => u.id === Number(activeMenuId),
+                  (u: any) => u.id === Number(activeMenuId),
                 );
                 if (!activeUser) return null;
 

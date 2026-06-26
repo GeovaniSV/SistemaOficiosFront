@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router";
 import {
   Plus,
   Search,
@@ -17,11 +16,16 @@ import Sidebar from "./Sidebar";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { Textarea } from "./ui/Textarea";
-import { useAppStore } from "../store/useAppStore";
+import {
+  useTemplates,
+  useAddTemplate,
+  useUpdateTemplate,
+} from "../hooks/queries/useTemplates";
 
 export default function Templates() {
-  const navigate = useNavigate();
-  const { templates, addTemplate, updateTemplate } = useAppStore();
+  const { data: templates = [], isLoading, isError } = useTemplates();
+  const addTemplate = useAddTemplate();
+  const updateTemplate = useUpdateTemplate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [view, setView] = useState<"list" | "form">("list");
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,27 +51,44 @@ export default function Templates() {
   };
 
   const handleEditTemplate = (template: any) => {
-    setFormData({ ...template });
+    setFormData({ ...template, status: "ativo" });
     setView("form");
     setActiveMenuId(null);
   };
 
-  const handleSaveTemplate = () => {
-    if (!formData.title.trim() || !formData.content.trim()) return;
+  const handleSaveTemplate = async () => {
+    if (!formData.title || !formData.content) return;
 
-    if (formData.id === 0) {
-      addTemplate(formData);
-      setToastMessage("Template criado com sucesso!");
-    } else {
-      updateTemplate(formData.id, formData);
-      setToastMessage("Template atualizado com sucesso!");
+    try {
+      if (formData.id === 0) {
+        await addTemplate.mutateAsync({
+          title: formData.title,
+          content: formData.content,
+        });
+        setToastMessage("Template criado com sucesso!");
+      } else {
+        await updateTemplate.mutateAsync({
+          id: formData.id,
+          title: formData.title,
+          content: formData.content,
+        });
+        setToastMessage("Template atualizado com sucesso!");
+      }
+      setView("list");
+    } catch (error: any) {
+      const errors = error?.response?.data?.errors;
+      const firstError = errors && Object.values(errors)[0];
+      const message =
+        (Array.isArray(firstError) ? firstError[0] : firstError) ||
+        error?.response?.data?.message ||
+        "Erro ao salvar template.";
+      setToastMessage(message);
     }
 
     setTimeout(() => setToastMessage(""), 3000);
-    setView("list");
   };
 
-  const filteredTemplates = templates.filter((t) =>
+  const filteredTemplates = templates.filter((t: any) =>
     t.title.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
@@ -145,41 +166,65 @@ export default function Templates() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
-                      {paginatedTemplates.length > 0 ? (
-                        paginatedTemplates.map((template) => (
-                          <tr
-                            key={template.id}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveMenuId(
-                                activeMenuId === template.id
-                                  ? null
-                                  : template.id,
-                              );
-                              setMenuPosition({ x: e.clientX, y: e.clientY });
-                            }}
-                            className={`hover:bg-slate-50 transition-colors cursor-pointer group ${activeMenuId === template.id ? "bg-slate-50" : ""}`}
-                          >
-                            <td className="px-6 py-4 font-medium text-slate-900">
-                              {template.title}
-                            </td>
-                            <td className="px-6 py-4 text-slate-500">
-                              <span className="line-clamp-1">
-                                {template.content}
-                              </span>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
+                      {isLoading && (
                         <tr>
                           <td
                             colSpan={2}
                             className="px-6 py-8 text-center text-slate-500"
                           >
-                            Nenhum template encontrado.
+                            Carregando templates...
                           </td>
                         </tr>
                       )}
+                      {isError && (
+                        <tr>
+                          <td
+                            colSpan={2}
+                            className="px-6 py-8 text-center text-rose-500"
+                          >
+                            Erro ao carregar templates da API.
+                          </td>
+                        </tr>
+                      )}
+                      {!isLoading && !isError && paginatedTemplates.length > 0
+                        ? paginatedTemplates.map((template: any) => (
+                            <tr
+                              key={template.id}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveMenuId(
+                                  activeMenuId === template.id
+                                    ? null
+                                    : template.id,
+                                );
+                                setMenuPosition({
+                                  x: e.clientX,
+                                  y: e.clientY,
+                                });
+                              }}
+                              className={`hover:bg-slate-50 transition-colors cursor-pointer group ${activeMenuId === template.id ? "bg-slate-50" : ""}`}
+                            >
+                              <td className="px-6 py-4 font-medium text-slate-900">
+                                {template.title}
+                              </td>
+                              <td className="px-6 py-4 text-slate-500">
+                                <span className="line-clamp-1">
+                                  {template.content}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        : !isLoading &&
+                          !isError && (
+                            <tr>
+                              <td
+                                colSpan={2}
+                                className="px-6 py-8 text-center text-slate-500"
+                              >
+                                Nenhum template encontrado.
+                              </td>
+                            </tr>
+                          )}
                     </tbody>
                   </table>
                 </div>
@@ -231,7 +276,7 @@ export default function Templates() {
                   <button
                     onClick={() =>
                       handleEditTemplate(
-                        templates.find((t) => t.id === activeMenuId),
+                        templates.find((t: any) => t.id === activeMenuId),
                       )
                     }
                     className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center"
@@ -396,7 +441,14 @@ export default function Templates() {
                   <Button variant="secondary" onClick={() => setView("list")}>
                     Cancelar
                   </Button>
-                  <Button type="submit">Salvar Template</Button>
+                  <Button
+                    type="submit"
+                    isLoading={
+                      addTemplate.isPending || updateTemplate.isPending
+                    }
+                  >
+                    Salvar Template
+                  </Button>
                 </div>
               </form>
             </div>

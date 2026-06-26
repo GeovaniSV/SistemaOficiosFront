@@ -5,6 +5,7 @@ import { ContatoType } from "@/src/types/contato";
 import { Button } from "@/src/components/ui/Button";
 import { Badge } from "@/src/components/ui/Badge";
 import {
+  AlertTriangle,
   Building2,
   ChevronLeft,
   ChevronRight,
@@ -19,7 +20,7 @@ function ContatosListPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: contatos = [], isLoading } = useContatos();
+  const { data: contatos = [], isLoading, isError, error } = useContatos();
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
   const [menuPosition, setMenuPosition] = useState<{
     x: number;
@@ -87,71 +88,84 @@ function ContatosListPage() {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="text-xs text-slate-500 uppercase bg-slate-50/50 border-b border-slate-200">
-              <tr>
-                <th className="px-6 py-4 font-medium">Nome</th>
-                <th className="px-6 py-4 font-medium">Tipo</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
-              {paginatedContatos.map((contato: ContatoType) => (
-                <tr
-                  key={contato.id}
-                  className={`hover:bg-slate-50/50 transition-colors cursor-pointer ${activeMenuId === contato.id ? "bg-emerald-50/50" : ""}`}
-                  onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    setMenuPosition({ x: e.clientX, y: rect.bottom });
-                    setActiveMenuId(contato.id!);
-                  }}
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex flex-col">
-                      <span className="font-medium text-slate-900">
-                        {contato.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Badge
-                      variant={contato.type === "PJ" ? "info" : "secondary"}
-                    >
-                      {contato.type === "PJ" ? (
-                        <Building2 className="w-3.5 h-3.5 mr-1" />
-                      ) : (
-                        <User className="w-3.5 h-3.5 mr-1" />
-                      )}
-                      {contato.type === "PJ"
-                        ? "Pessoa Jurídica"
-                        : "Pessoa Física"}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Badge
-                      variant={
-                        contato.active !== false ? "success" : "secondary"
-                      }
-                    >
-                      {contato.active !== false ? "Ativo" : "Inativo"}
-                    </Badge>
-                  </td>
-                </tr>
-              ))}
-              {paginatedContatos.length === 0 && (
+        {!isError ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="text-xs text-slate-500 uppercase bg-slate-50/50 border-b border-slate-200">
                 <tr>
-                  <td
-                    colSpan={2}
-                    className="px-6 py-8 text-center text-slate-500"
-                  >
-                    Nenhum contato encontrado.
-                  </td>
+                  <th className="px-6 py-4 font-medium">Nome</th>
+                  <th className="px-6 py-4 font-medium">Tipo</th>
+                  <th className="px-6 py-4 font-medium">Status</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {paginatedContatos.map((contato: ContatoType) => (
+                  <tr
+                    key={contato.id}
+                    className={`hover:bg-slate-50/50 transition-colors cursor-pointer ${activeMenuId === contato.id ? "bg-emerald-50/50" : ""}`}
+                    onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setMenuPosition({ x: e.clientX, y: rect.bottom });
+                      setActiveMenuId(contato.id!);
+                    }}
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-slate-900">
+                          {contato.name}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Badge
+                        variant={contato.type === "PJ" ? "info" : "secondary"}
+                      >
+                        {contato.type === "PJ" ? (
+                          <Building2 className="w-3.5 h-3.5 mr-1" />
+                        ) : (
+                          <User className="w-3.5 h-3.5 mr-1" />
+                        )}
+                        {contato.type === "PJ"
+                          ? "Pessoa Jurídica"
+                          : "Pessoa Física"}
+                      </Badge>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Badge
+                        variant={
+                          contato.is_active !== false ? "success" : "secondary"
+                        }
+                      >
+                        {contato.is_active !== false ? "Ativo" : "Inativo"}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+                {paginatedContatos.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={2}
+                      className="px-6 py-8 text-center text-slate-500"
+                    >
+                      Nenhum contato encontrado.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <tr>
+            <td colSpan={5} className="px-6 py-8 text-center text-rose-500">
+              <p className="inline-flex items-center gap-2">
+                <AlertTriangle size={18} />
+                {(error as any)?.response?.status === 403
+                  ? "Você não tem permissão para visualizar os contatos."
+                  : "Erro ao carregar papéis da API."}
+              </p>
+            </td>
+          </tr>
+        )}
 
         {/* Pagination */}
         {filteredContatos.length > itemsPerPage && (

@@ -11,9 +11,13 @@ import { OficiosFilters } from "../../components/OficiosFilters";
 import { OficiosList } from "../../components/OficiosList";
 import { OficiosContextMenu } from "../../components/OficiosContextMenu";
 import { CheckCircle2 } from "lucide-react";
+import DownloadPdfModal from "@/src/components/DownloadPdfModal";
+import { OficioType } from "@/src/types/oficio";
 
 export function ListOficios() {
   const navigate = useNavigate();
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [downloadOficio, setDownloadOficio] = useState<any>();
   const [destinatarioSearch, setDestinatarioSearch] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedDestinatario, setSelectedDestinatario] = useState<any>(null);
@@ -74,6 +78,8 @@ export function ListOficios() {
       />
 
       <OficiosContextMenu
+        setDownloadOficio={setDownloadOficio}
+        setIsDownloadModalOpen={setIsDownloadModalOpen}
         activeMenuId={activeMenuId}
         menuPosition={menuPosition}
         setActiveMenuId={setActiveMenuId}
@@ -117,8 +123,14 @@ export function ListOficios() {
         }}
       />
 
+      <DownloadPdfModal
+        isOpen={isDownloadModalOpen}
+        onClose={() => setIsDownloadModalOpen(false)}
+        oficio={downloadOficio}
+      />
+
       <OficioInfoModal
-        isOpen={!!infoOficio}
+        isOpen={infoOficio ? true : false}
         onClose={() => setInfoOficio(null)}
         oficio={infoOficio}
       />
