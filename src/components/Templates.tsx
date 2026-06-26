@@ -371,58 +371,7 @@ export default function Templates() {
                   </h3>
 
                   <div className="border border-slate-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-colors">
-                    <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center space-x-2 overflow-x-auto">
-                      <button
-                        type="button"
-                        className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded transition-colors"
-                        title="Negrito"
-                      >
-                        <span className="font-bold">B</span>
-                      </button>
-                      <button
-                        type="button"
-                        className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded transition-colors"
-                        title="Itálico"
-                      >
-                        <span className="italic font-serif">I</span>
-                      </button>
-                      <button
-                        type="button"
-                        className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded transition-colors"
-                        title="Sublinhado"
-                      >
-                        <span className="underline">U</span>
-                      </button>
-                      <div className="w-px h-4 bg-slate-300 mx-1"></div>
-                      <button
-                        type="button"
-                        className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded transition-colors text-sm"
-                        title="Alinhar à Esquerda"
-                      >
-                        Esquerda
-                      </button>
-                      <button
-                        type="button"
-                        className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded transition-colors text-sm"
-                        title="Centralizar"
-                      >
-                        Centro
-                      </button>
-                      <button
-                        type="button"
-                        className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded transition-colors text-sm"
-                        title="Alinhar à Direita"
-                      >
-                        Direita
-                      </button>
-                      <button
-                        type="button"
-                        className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded transition-colors text-sm"
-                        title="Justificar"
-                      >
-                        Justificar
-                      </button>
-                    </div>
+                    <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center space-x-2 overflow-x-auto"></div>
                     <Textarea
                       id="conteudo"
                       rows={16}
