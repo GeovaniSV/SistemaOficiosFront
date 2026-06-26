@@ -130,7 +130,7 @@ export default function Usuarios() {
           }
           setInitialStatus(formData.status);
         }
-        // setView("list");
+        setView("list");
       } else {
         const response = await addUsuario.mutateAsync({
           name: formData.name,
