@@ -46,6 +46,7 @@ export default function EmailLogsPage() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const { data, isLoading, refetch, isFetching } = useWorkerLogs(currentPage);
+  console.log(data);
   const logs = data?.data ?? [];
   const totalPages = data?.last_page ?? 1;
 
@@ -150,7 +151,7 @@ export default function EmailLogsPage() {
             <div className="col-span-1"></div>
             <div className="col-span-2">Status</div>
             <div className="col-span-2">Evento</div>
-            <div className="col-span-4">Mensagem</div>
+            <div className="col-span-4">Code</div>
             <div className="col-span-3">Data/Hora</div>
           </div>
 
@@ -192,13 +193,15 @@ export default function EmailLogsPage() {
                       </span>
                     </div>
                     <div className="col-span-2 flex items-center gap-2 text-slate-700">
-                      <EventIcon className="w-4 h-4 text-slate-400 shrink-0" />
                       <span className="font-medium text-sm">
-                        {codeConfig.label}
+                        {log.event_type}
                       </span>
                     </div>
-                    <div className="col-span-4 text-sm text-slate-600 truncate">
-                      {log.message}
+                    <div className="col-span-4 text-sm text-slate-600 truncate flex items-center gap-2">
+                      {log.status && (
+                        <EventIcon className="w-4 h-4 text-slate-400 shrink-0" />
+                      )}
+                      {codeConfig.label}
                     </div>
                     <div className="col-span-3 text-sm text-slate-500">
                       {new Date(log.created_at).toLocaleString("pt-BR")}
@@ -250,6 +253,14 @@ export default function EmailLogsPage() {
                           <p className="text-slate-900">
                             {log.metadata?.attempt ?? "-"}
                           </p>
+                        </div>
+                        <div className="sm:col-span-3">
+                          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">
+                            Mensagem
+                          </p>
+                          <pre className="bg-white border border-slate-200 rounded-lg p-3 text-xs font-mono text-slate-700 overflow-x-auto">
+                            {JSON.stringify(log.message, null, 2)}
+                          </pre>
                         </div>
                         <div className="sm:col-span-3">
                           <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">
