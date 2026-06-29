@@ -704,7 +704,7 @@ export default function Configuracoes() {
                                   </p>
 
                                   {isSearchingUser && (
-                                    <div className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    <div className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg h-30 overflow-y-auto">
                                       {filteredSignerCandidates.length > 0 ? (
                                         <ul className="py-1">
                                           {filteredSignerCandidates.map(

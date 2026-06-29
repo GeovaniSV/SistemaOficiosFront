@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useContatos } from "../../hooks/queries/useContatos";
+import { useContatos, useDeleteContato } from "../../hooks/queries/useContatos";
 import { ContatoType } from "@/src/types/contato";
 import { Button } from "@/src/components/ui/Button";
 import { Badge } from "@/src/components/ui/Badge";
@@ -12,15 +12,22 @@ import {
   Edit,
   Plus,
   Search,
+  Trash2Icon,
   User,
 } from "lucide-react";
 import { Input } from "@/src/components/ui/Input";
+import { Modal } from "@/src/components/ui/Modal";
 
 function ContatosListPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [confirmModal, setConfirmModal] = useState({
+    openModal: false,
+    contatoId: 0,
+  });
 
   const { data: contatos = [], isLoading, isError, error } = useContatos();
+  const deleteContato = useDeleteContato();
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
   const [menuPosition, setMenuPosition] = useState<{
     x: number;
@@ -52,9 +59,50 @@ function ContatosListPage() {
     }
   };
 
+  const handleConfirmModal = (contato: number) => {
+    setActiveMenuId(null);
+    setConfirmModal({ openModal: true, contatoId: contato });
+  };
+
+  const handleDeleteContato = () => {
+    const foundContato = contatos.find(
+      (c: ContatoType) => c.id === confirmModal.contatoId,
+    );
+    if (foundContato) {
+      setActiveMenuId(null);
+      deleteContato.mutate(confirmModal.contatoId);
+    }
+    setConfirmModal({ ...confirmModal, openModal: false });
+  };
+
   return (
     <>
-      {" "}
+      <Modal
+        isOpen={confirmModal.openModal}
+        onClose={() => setConfirmModal({ ...confirmModal, openModal: false })}
+        title="Confirmar ação"
+      >
+        <div>
+          <p>
+            Tem certeza que deseja desativar o contato{" "}
+            <span className="font-bold">{confirmModal.contatoId}</span>{" "}
+          </p>
+        </div>
+
+        <div className="flex justify-end gap-5 mt-5">
+          <Button
+            variant={"secondary"}
+            onClick={() =>
+              setConfirmModal({ ...confirmModal, openModal: false })
+            }
+          >
+            Cancelar
+          </Button>
+          <Button variant={"destructive"} onClick={() => handleDeleteContato()}>
+            Confirmar
+          </Button>
+        </div>
+      </Modal>{" "}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
@@ -89,8 +137,8 @@ function ContatosListPage() {
 
         {/* Table */}
         {!isError ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
+          <div className="overflow-hidden">
+            <table className="w-full text-sm text-left overflow-auto">
               <thead className="text-xs text-slate-500 uppercase bg-slate-50/50 border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4 font-medium">Nome</th>
@@ -234,6 +282,14 @@ function ContatosListPage() {
                   <Edit className="w-4 h-4 mr-3" />
                   Editar Contato
                 </button>
+
+                <button
+                  onClick={() => handleConfirmModal(activeMenuId)}
+                  className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-red-600 transition-colors w-full text-left"
+                >
+                  <Trash2Icon className="w-4 h-4 mr-3" />
+                  Desativar contato
+                </button>
               </div>
             </div>
 
@@ -264,6 +320,13 @@ function ContatosListPage() {
                       >
                         <Edit className="w-5 h-5 mr-3 text-slate-400" />
                         Editar Contato
+                      </button>
+                      <button
+                        onClick={() => handleConfirmModal(activeMenuId)}
+                        className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-red-600 transition-colors w-full text-left"
+                      >
+                        <Trash2Icon className="w-4 h-4 mr-3" />
+                        Desativar contato
                       </button>
                     </div>
                   );

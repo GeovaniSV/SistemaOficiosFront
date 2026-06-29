@@ -153,30 +153,6 @@ function ContatosEditPage() {
         {!isLoading ? (
           <form onSubmit={handleSaveContact} className="p-6 space-y-8">
             {/* Status and Tipo */}
-            <div className="flex flex-col md:flex-row items-start justify-between bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 gap-4">
-              <div>
-                <h4 className="text-sm font-medium text-slate-900">
-                  Status do Contato
-                </h4>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Define se o contato está disponível para uso
-                </p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={formData.is_active !== false}
-                  onChange={(e) =>
-                    setFormData({ ...formData, is_active: e.target.checked })
-                  }
-                />
-                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 peer-disabled:bg-emerald-400"></div>
-                <span className="ml-3 text-sm font-medium text-slate-700">
-                  {formData.is_active !== false ? "Ativo" : "Inativo"}
-                </span>
-              </label>
-            </div>
 
             <div>
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-2 mb-4">
