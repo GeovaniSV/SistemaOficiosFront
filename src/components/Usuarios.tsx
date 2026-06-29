@@ -161,13 +161,12 @@ export default function Usuarios() {
           for (const [errorKey, errors] of Object.entries(
             error.response.data.errors as [string, string[]][],
           )) {
-            console.log(errorKey, errors);
             errors.forEach((err: any) => {
               toast.error(`${errorKey}: ${httpErrorHash[err]}`);
             });
           }
         }
-        console.log(error.response?.data);
+
         if (
           error.response?.data.exception ===
           "Illuminate\\Database\\UniqueConstraintViolationException"

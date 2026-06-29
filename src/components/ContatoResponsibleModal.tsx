@@ -89,7 +89,7 @@ export function ContatoResponsibleModal({
 
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                E-mail
+                E-mail <span className="text-rose-500">*</span>
               </label>
               <Input
                 type="email"
@@ -140,7 +140,7 @@ export function ContatoResponsibleModal({
 
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Departamento
+                Departamento <span className="text-rose-500">*</span>
               </label>
               <Input
                 type="text"

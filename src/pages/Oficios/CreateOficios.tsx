@@ -12,6 +12,7 @@ import { NovoOficioPreviewModal } from "@/src/components/NovoOficioPreviewModal"
 import { NovoOficioTemplateModal } from "@/src/components/NovoOficioTemplateModal";
 import { toast, ToastContainer } from "react-toastify";
 import { AxiosError } from "axios";
+import { ContatoType } from "@/src/types/contato";
 
 const PriorityHash: Record<string, string> = {
   normal: "MEDIUM",
@@ -24,7 +25,9 @@ function CreateOficios() {
   const navigate = useNavigate();
   const [destinatarioSearch, setDestinatarioSearch] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedDestinatarios, setSelectedDestinatarios] = useState<any[]>([]);
+  const [selectedDestinatarios, setSelectedDestinatarios] = useState<
+    ContatoType[]
+  >([]);
   const [selectedResponsibles, setSelectedResponsibles] = useState<any[]>([]);
   const [expandedRecipientId, setExpandedRecipientId] = useState<number | null>(
     null,
@@ -50,43 +53,53 @@ function CreateOficios() {
 
   const handleSubmit = (status: string) => {
     try {
-      const destinationContactId = selectedDestinatarios[0]?.id;
-
-      if (!destinationContactId) {
-        toast.error("Por favor, selecione pelo menos um destinatário.");
-        return;
-      }
-      if (selectedResponsibles.length === 0) {
-        toast.error("Por favor, selecione pelo menos um responsável.");
-        return;
-      }
       if (!formData.subject) {
         toast.error("Por favor, preencha o assunto.");
         return;
       }
+      if (!selectedDestinatarios) {
+        toast.error("Por favor, selecione pelo menos um destinatário.");
+        return;
+      }
+
+      if (selectedResponsibles.length === 0) {
+        toast.error("Por favor, selecione pelo menos um responsável.");
+        return;
+      }
+
       if (!content.trim()) {
         toast.error("Por favor, preencha o conteúdo do ofício.");
         return;
       }
 
-      const payload = {
-        ...formData,
-        content: content,
-        responsibles: selectedResponsibles.map((res) => res.id),
-        destination_contact_id: destinationContactId,
-        priority: PriorityHash[formData.priority],
-        department: selectedResponsibles[0]?.department ?? null,
-        submit: status,
-      };
+      selectedDestinatarios.map((dest) => {
+        const responsiblesIds = selectedResponsibles
+          .filter((resp) => {
+            if (resp.contact_id === dest.id) {
+              return resp.id;
+            }
+          })
+          .map((resp) => resp.id);
 
-      addOficio.mutate(payload, {
-        onSuccess: () => {
-          toast.success("Ofício submetido à aprovação com sucesso!");
-          setTimeout(() => navigate("/oficios"), 2000);
-        },
-        onError: () => {
-          toast.error("Erro ao salvar o ofício. Tente novamente.");
-        },
+        const payload = {
+          ...formData,
+          content: content,
+          responsibles: dest.responsibles.map((res) => res.id),
+          destination_contact_id: dest.id,
+          priority: PriorityHash[formData.priority],
+          department: "",
+          submit: status,
+        };
+
+        addOficio.mutate(payload, {
+          onSuccess: () => {
+            toast.success("Ofício submetido à aprovação com sucesso!");
+            setTimeout(() => navigate("/oficios"), 1000);
+          },
+          onError: () => {
+            toast.error("Erro ao salvar o ofício. Tente novamente.");
+          },
+        });
       });
     } catch (error) {
       if (error) {

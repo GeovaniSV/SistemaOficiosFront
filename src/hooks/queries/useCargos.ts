@@ -22,6 +22,18 @@ export function useCargos() {
   });
 }
 
+export function useCargoByID(id: number) {
+  return useQuery({
+    queryKey: ["cargo", id],
+    queryFn: () =>
+      api.get(`/api/positions/${id}`).then((res) => {
+        const data = res.data.data ?? res.data;
+
+        return adaptCargo(data);
+      }),
+  });
+}
+
 // POST
 export function useAddCargo() {
   const queryClient = useQueryClient();

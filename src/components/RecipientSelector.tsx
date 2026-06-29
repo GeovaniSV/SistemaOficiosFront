@@ -240,7 +240,7 @@ export function RecipientSelector({
                             <span className="text-xs font-medium text-slate-500">
                               Responsáveis disponíveis:
                             </span>
-                            {/* <button
+                            <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -275,7 +275,7 @@ export function RecipientSelector({
                               )
                                 ? "Desselecionar todos"
                                 : "Selecionar todos"}
-                            </button> */}
+                            </button>
                           </div>
                           {dest.responsibles.length > 10 && (
                             <div className="mb-3 relative">

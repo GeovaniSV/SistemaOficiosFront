@@ -5,7 +5,9 @@ import { DocumentHeader, DocumentFooter } from "./DocumentTemplate";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { useReviewOficio, useSendOficio } from "../hooks/queries/useOficios";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import { AxiosError } from "axios";
+import { useCargoByID } from "../hooks/queries/useCargos";
 
 interface OficioEvaluationModalProps {
   isOpen: boolean;
@@ -54,6 +56,7 @@ export function OficioEvaluationModal({
   const [rejectionReason, setRejectionReason] = useState("");
   const reviewOficio = useReviewOficio();
   const sendOficio = useSendOficio();
+  const { data: cargo } = useCargoByID(oficio?.author.position_id!);
 
   // Reset state when modal opens
   React.useEffect(() => {
@@ -82,22 +85,34 @@ export function OficioEvaluationModal({
     : oficio.destination_contact;
 
   const handleApprove = async () => {
-    const payload = {
-      id: Number(oficio.id),
-      payload: {
-        status: "APPROVED",
-        subject: oficio.subject,
-        priority: oficio.priority,
-        content: oficio.content,
-        department: oficio.department,
-      },
-    };
-    await reviewOficio.mutateAsync(payload);
+    try {
+      const payload = {
+        id: Number(oficio.id),
+        payload: {
+          status: "APPROVED",
+          subject: oficio.subject,
+          priority: oficio.priority,
+          content: oficio.content,
+          department: oficio.department,
+        },
+      };
+      await reviewOficio.mutateAsync(payload);
 
-    if (sendViaEmail) {
-      await sendOficio.mutateAsync({ id: Number(oficio.id!) });
+      if (sendViaEmail) {
+        await sendOficio.mutateAsync({ id: Number(oficio.id!) });
+      }
+      onClose();
+    } catch (error) {
+      if (error) {
+        if (error instanceof AxiosError) {
+          const errorHash: Record<number, string> = {
+            403: "Você não tem permissão para enviar oficios por email",
+          };
+          const status = error.response?.status;
+          toast.error(errorHash[status!]);
+        }
+      }
     }
-    onClose();
   };
 
   const handleReject = () => {
@@ -122,9 +137,11 @@ export function OficioEvaluationModal({
 
   return (
     <>
+      <ToastContainer />
       {/* Evaluation Drawer Backdrop / Document Preview */}
       <div className="fixed inset-0 z-50 right-0 bg-slate-100/95 backdrop-blur-sm animate-in fade-in duration-200 flex">
         {/* Left side: Document Preview */}
+
         <div
           className="flex-1 documento overflow-y-auto  p-4 sm:p-8 flex flex-col items-center"
           onClick={onClose}
@@ -226,7 +243,7 @@ export function OficioEvaluationModal({
               </div>
               <div className="mt-16 text-center ">
                 <p className="font-bold text-slate-900">{oficio.author.name}</p>
-                <p className="text-slate-500">{oficio.author.position_id}</p>
+                <p className="text-slate-500">{cargo?.name}</p>
               </div>
             </div>
 

@@ -98,7 +98,7 @@ function ContatoCreatePage() {
     try {
       await addContato.mutateAsync(formData);
       toast.success("Contato criado com sucesso!");
-      // navigate("/contatos");
+      navigate("/contatos");
     } catch (error) {
       if (error instanceof AxiosError) {
         if (error.response?.data.errors) {

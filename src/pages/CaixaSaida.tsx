@@ -46,7 +46,7 @@ export default function EmailLogsPage() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const { data, isLoading, refetch, isFetching } = useWorkerLogs(currentPage);
-  console.log(data);
+
   const logs = data?.data ?? [];
   const totalPages = data?.last_page ?? 1;
 
