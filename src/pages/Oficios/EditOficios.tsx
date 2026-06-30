@@ -275,7 +275,6 @@ function EditOficios() {
                   <option value="normal">Normal</option>
                   <option value="baixa">Baixa</option>
                   <option value="alta">Alta</option>
-                  <option value="urgente">Urgente</option>
                 </Select>
               </div>
 

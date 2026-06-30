@@ -44,7 +44,12 @@ export function useUpdateContato() {
 export function useDeleteContato() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => api.delete(`/api/contacts/${id}`),
+    mutationFn: ({ id, param }: { id: number; param: boolean }) =>
+      api.delete(`/api/contacts/${id}`, {
+        data: {
+          activate: param,
+        },
+      }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["contatos"] }),
   });
 }

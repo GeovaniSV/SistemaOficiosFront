@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Edit,
   Plus,
+  PowerIcon,
   Search,
   Trash2Icon,
   User,
@@ -23,6 +24,9 @@ function ContatosListPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [confirmModal, setConfirmModal] = useState({
     openModal: false,
+    contato: {
+      is_active: false,
+    },
     contatoId: 0,
   });
 
@@ -60,17 +64,26 @@ function ContatosListPage() {
   };
 
   const handleConfirmModal = (contato: number) => {
+    const foundContato = contatos.find((c: ContatoType) => c.id === contato);
     setActiveMenuId(null);
-    setConfirmModal({ openModal: true, contatoId: contato });
+    setConfirmModal({
+      openModal: true,
+      contatoId: contato,
+      contato: foundContato,
+    });
   };
 
   const handleDeleteContato = () => {
     const foundContato = contatos.find(
       (c: ContatoType) => c.id === confirmModal.contatoId,
     );
+
     if (foundContato) {
       setActiveMenuId(null);
-      deleteContato.mutate(confirmModal.contatoId);
+      deleteContato.mutate({
+        id: confirmModal.contatoId,
+        param: foundContato.is_active === true ? false : true,
+      });
     }
     setConfirmModal({ ...confirmModal, openModal: false });
   };
@@ -84,7 +97,9 @@ function ContatosListPage() {
       >
         <div>
           <p>
-            Tem certeza que deseja desativar o contato{" "}
+            Tem certeza que deseja{" "}
+            {confirmModal.contato.is_active === true ? "desativar" : "ativar"} o
+            contato{" "}
             <span className="font-bold">{confirmModal.contatoId}</span>{" "}
           </p>
         </div>
@@ -98,11 +113,19 @@ function ContatosListPage() {
           >
             Cancelar
           </Button>
-          <Button variant={"destructive"} onClick={() => handleDeleteContato()}>
+          <Button
+            variant={
+              confirmModal.contato.is_active === true
+                ? "destructive"
+                : "default"
+            }
+            onClick={() => handleDeleteContato()}
+          >
             Confirmar
           </Button>
         </div>
-      </Modal>{" "}
+      </Modal>
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
@@ -275,21 +298,40 @@ function ContatosListPage() {
               }}
             >
               <div className="flex flex-col">
-                <button
-                  onClick={() => handleEditContact(activeMenuId)}
-                  className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors w-full text-left"
-                >
-                  <Edit className="w-4 h-4 mr-3" />
-                  Editar Contato
-                </button>
+                {(() => {
+                  const activeContact = contatos.find(
+                    (c: ContatoType) => c.id === activeMenuId,
+                  );
+                  if (!activeContact) return null;
 
-                <button
-                  onClick={() => handleConfirmModal(activeMenuId)}
-                  className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-red-600 transition-colors w-full text-left"
-                >
-                  <Trash2Icon className="w-4 h-4 mr-3" />
-                  Desativar contato
-                </button>
+                  return (
+                    <div className="flex flex-col space-y-2">
+                      <button
+                        onClick={() => handleEditContact(activeContact)}
+                        className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors w-full text-left"
+                      >
+                        <Edit className="w-5 h-5 mr-3 text-slate-400" />
+                        Editar Contato
+                      </button>
+                      <button
+                        onClick={() => handleConfirmModal(activeMenuId)}
+                        className={`flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 ${activeContact.is_active === true ? "hover:text-red-600" : "hover:text-emerald-500"} transition-colors w-full text-left`}
+                      >
+                        {activeContact.is_active ? (
+                          <>
+                            <Trash2Icon className="w-4 h-4 mr-3" />
+                            Desativar contato
+                          </>
+                        ) : (
+                          <>
+                            <PowerIcon className="w-4 h-4 mr-3" />
+                            Ativar contato
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 
@@ -323,10 +365,19 @@ function ContatosListPage() {
                       </button>
                       <button
                         onClick={() => handleConfirmModal(activeMenuId)}
-                        className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-red-600 transition-colors w-full text-left"
+                        className={`flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 ${activeContact.is_active === true ? "hover:text-red-600" : "hover:text-emerald-500"} transition-colors w-full text-left`}
                       >
-                        <Trash2Icon className="w-4 h-4 mr-3" />
-                        Desativar contato
+                        {activeContact.is_active ? (
+                          <>
+                            <Trash2Icon className="w-4 h-4 mr-3" />
+                            Desativar contato
+                          </>
+                        ) : (
+                          <>
+                            <PowerIcon className="w-4 h-4 mr-3" />
+                            Ativar contato
+                          </>
+                        )}
                       </button>
                     </div>
                   );
